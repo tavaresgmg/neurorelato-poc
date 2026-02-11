@@ -22,14 +22,14 @@ test('normalize faz POST e retorna response quando ok', async () => {
     json: async () => mock,
   }));
 
-  const res = await normalize({ text: 'abc', options: { enable_anonymization: false } });
+  const res = await normalize({ text: 'abc', options: { enable_embeddings: false } });
   expect(res.request_id).toBe('1');
   // @ts-expect-error vitest global
   expect(fetch).toHaveBeenCalledTimes(1);
   // @ts-expect-error vitest global
   const args = fetch.mock.calls[0] as any[];
   const body = JSON.parse(args[1].body as string);
-  expect(body.options.enable_anonymization).toBe(false);
+  expect(body.options.enable_embeddings).toBe(false);
   expect(args[1].headers).toBeTruthy();
   // requestJson sempre manda X-Request-ID.
   expect(String((args[1].headers as any).get?.('X-Request-ID') || '')).toMatch(/pn-|-/);
@@ -46,7 +46,7 @@ test('normalize lança ApiError quando resposta nao ok', async () => {
   await expect(normalize({ text: 'abc' })).rejects.toBeInstanceOf(ApiError);
 });
 
-test('normalize: quando options nao sao enviadas, usa defaults (anon=true, embeddings=false)', async () => {
+test('normalize: quando options nao sao enviadas, usa defaults (embeddings=false)', async () => {
   // @ts-expect-error vitest global
   globalThis.fetch = vi.fn(async () => ({
     ok: true,
@@ -68,7 +68,6 @@ test('normalize: quando options nao sao enviadas, usa defaults (anon=true, embed
   // @ts-expect-error vitest global
   const args = fetch.mock.calls[0] as any[];
   const body = JSON.parse(args[1].body as string);
-  expect(body.options.enable_anonymization).toBe(true);
   expect(body.options.enable_embeddings).toBe(false);
 });
 

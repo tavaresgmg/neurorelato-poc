@@ -69,8 +69,8 @@ Defina `PN_BASIC_AUTH_USER` e `PN_BASIC_AUTH_PASSWORD` (Heroku Config Vars) para
 
 Privacidade (demo):
 
-- `PN_FORCE_ANONYMIZATION=true` força anonimização no backend (no `docker-compose.yml`, este e o default).
-- `PN_ENABLE_EMBEDDINGS_BY_DEFAULT=true` liga embeddings por default (no `docker-compose.yml`, este e o default; o primeiro uso pode baixar o modelo).
+- A anonimização roda sempre no backend (sem depender de toggle do cliente).
+- `PN_ENABLE_EMBEDDINGS_BY_DEFAULT=true` liga embeddings por default (o primeiro uso pode baixar o modelo).
 - `PN_EMBEDDINGS_WARMUP=true` tenta aquecer embeddings no startup (background) para reduzir latência do primeiro request.
 
 LGPD (importante):

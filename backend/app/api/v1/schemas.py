@@ -6,13 +6,12 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class NormalizeOptions(BaseModel):
-    enable_anonymization: bool = True
     enable_embeddings: bool = False
 
 
 class NormalizeRequest(BaseModel):
     text: str = Field(min_length=1, max_length=20_000)
-    options: NormalizeOptions = NormalizeOptions()
+    options: NormalizeOptions = Field(default_factory=NormalizeOptions)
 
     @field_validator("text")
     @classmethod

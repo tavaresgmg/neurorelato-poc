@@ -51,8 +51,8 @@ Plus:
 - Motivo: permitir auditoria de offsets (XAI) sem reter texto bruto com PII.
 - Decisao: a UI mantem anonimização **sempre ativa** (sem toggle) para reduzir risco de uso indevido e
   garantir rastreabilidade (offsets) sem expor PII.
-- Consequencia: para chamadas diretas na API, ainda existe a opcao `enable_anonymization`, mas em ambientes
-  de demo recomenda-se `PN_FORCE_ANONYMIZATION=true` para nao depender do cliente.
+- Consequencia: a API nao expõe toggle de anonimização; o pipeline roda sempre antes de processar/persistir
+  (requisito "Plus" do desafio). Campos antigos como `enable_anonymization` sao ignorados.
 
 4. Monolito modular na PoC
 

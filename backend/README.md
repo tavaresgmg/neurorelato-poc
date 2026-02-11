@@ -55,7 +55,7 @@ uv run python tools/benchmark.py --format json --runs 20 --out /tmp/plataformane
   - `PN_BASIC_AUTH_USER`
   - `PN_BASIC_AUTH_PASSWORD`
 - Policies (server-side):
-  - `PN_FORCE_ANONYMIZATION=true`
+  - Anonimização roda sempre (antes de processar/persistir).
   - `PN_ENABLE_EMBEDDINGS_BY_DEFAULT=true|false`
   - `PN_EMBEDDINGS_WARMUP=true|false`
   - `PN_EMBEDDINGS_MODEL` (default: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`)

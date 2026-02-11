@@ -52,7 +52,6 @@ export async function normalize(payload: NormalizeRequest): Promise<NormalizeRes
     body: JSON.stringify({
       text: payload.text,
       options: {
-        enable_anonymization: payload.options?.enable_anonymization ?? true,
         enable_embeddings: payload.options?.enable_embeddings ?? false,
       },
     }),

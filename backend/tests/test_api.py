@@ -33,7 +33,7 @@ def test_normalize_contract_minimal() -> None:
     with TestClient(create_app(database_url="sqlite+pysqlite:///:memory:", init_db=True)) as client:
         r = client.post(
             "/api/v1/normalize",
-            json={"text": "texto de teste", "options": {"enable_anonymization": False}},
+            json={"text": "texto de teste"},
         )
         assert r.status_code == 200
         data = r.json()
@@ -41,6 +41,7 @@ def test_normalize_contract_minimal() -> None:
         assert "created_at" in data
         assert "domains" in data
         assert isinstance(data["domains"], list)
+        # A anonimização sempre roda, mas pode não encontrar PII neste texto.
         assert data["input"]["was_anonymized"] is False
         assert "redacted_text" not in data["input"]
 
@@ -116,18 +117,13 @@ def test_normalize_extracts_findings_and_gaps() -> None:
         assert isinstance(data["gaps"], list)
 
 
-def test_force_anonymization_overrides_client_option(monkeypatch: MonkeyPatch) -> None:
-    """
-    Em demo hospedada, podemos forçar anonimização no backend por policy (sem confiar no cliente).
-    """
-    from app.api.v1 import routes
-
-    monkeypatch.setattr(routes.settings, "force_anonymization", True)
+def test_anonymization_is_always_applied_and_client_cannot_disable() -> None:
     with TestClient(create_app(database_url="sqlite+pysqlite:///:memory:", init_db=True)) as client:
         r = client.post(
             "/api/v1/normalize",
             json={
                 "text": "Contato: joao@example.com. Meu filho Joao tem 7 anos.",
+                # Mesmo com campos antigos, a API deve manter o processamento seguro.
                 "options": {"enable_anonymization": False, "enable_embeddings": False},
             },
         )
@@ -160,7 +156,7 @@ def test_enable_embeddings_by_default_warns_and_falls_back_when_unavailable(
             "/api/v1/normalize",
             json={
                 "text": "Ele não olha nos olhos quando falo. Muito agitado, não para quieto.",
-                "options": {"enable_anonymization": False, "enable_embeddings": False},
+                "options": {"enable_embeddings": False},
             },
         )
         assert r.status_code == 200
@@ -199,7 +195,7 @@ def test_enable_embeddings_by_default_extracts_embeddings_findings_even_if_clien
             "/api/v1/normalize",
             json={
                 "text": "Na escola, ele se dispersa com facilidade durante tarefas longas.",
-                "options": {"enable_embeddings": False, "enable_anonymization": False},
+                "options": {"enable_embeddings": False},
             },
         )
         assert r.status_code == 200
@@ -227,7 +223,7 @@ def test_embeddings_runtime_error_adds_warning_and_falls_back(monkeypatch: Monke
             "/api/v1/normalize",
             json={
                 "text": "Ele não olha nos olhos quando falo. Muito agitado, não para quieto.",
-                "options": {"enable_embeddings": True, "enable_anonymization": False},
+                "options": {"enable_embeddings": True},
             },
         )
         assert r.status_code == 200

@@ -19,9 +19,8 @@ services:
       PN_BASIC_AUTH_USER: ""
       PN_BASIC_AUTH_PASSWORD: ""
       PN_DATABASE_URL: postgresql+psycopg://plataformaneuro:plataformaneuro@db:5432/plataformaneuro
-      # Policies (server-side): useful for hosted demos (avoid trusting client toggles).
-      PN_FORCE_ANONYMIZATION: "${PN_FORCE_ANONYMIZATION:-true}"
-      PN_ENABLE_EMBEDDINGS_BY_DEFAULT: "${PN_ENABLE_EMBEDDINGS_BY_DEFAULT:-true}"
+      # Policies (server-side).
+      PN_ENABLE_EMBEDDINGS_BY_DEFAULT: "${PN_ENABLE_EMBEDDINGS_BY_DEFAULT:-false}"
       PN_EMBEDDINGS_WARMUP: "${PN_EMBEDDINGS_WARMUP:-false}"
       PN_EMBEDDINGS_MODEL: "${PN_EMBEDDINGS_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}"
     ports:

@@ -73,7 +73,7 @@ export default function App() {
     try {
       const data = await normalize({
         text,
-        options: { enable_anonymization: true, enable_embeddings: enableEmbeddings },
+        options: { enable_embeddings: enableEmbeddings },
       });
       setResult(data);
       setActiveRunId(data.request_id);

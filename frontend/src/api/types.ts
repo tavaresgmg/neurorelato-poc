@@ -1,5 +1,4 @@
 export type NormalizeOptions = {
-  enable_anonymization: boolean;
   enable_embeddings: boolean;
 };
 

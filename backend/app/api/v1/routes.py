@@ -60,9 +60,8 @@ def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> Norma
         )
     processed_text = payload.text
     was_anonymized = False
-    enable_anonymization = payload.options.enable_anonymization or settings.force_anonymization
-    if enable_anonymization:
-        processed_text, was_anonymized, _hits = anonymize_text(payload.text)
+    # Segurança/LGPD: sempre rodamos a anonimização antes de processar e persistir.
+    processed_text, was_anonymized, _hits = anonymize_text(payload.text)
 
     embeddings_provider: SafeEmbeddingProvider | None = None
     enable_embeddings = payload.options.enable_embeddings or settings.enable_embeddings_by_default

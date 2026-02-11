@@ -68,7 +68,7 @@ def test_e2e_anonymization_masks_pii_and_sets_flag() -> None:
             "/api/v1/normalize",
             json={
                 "text": text,
-                "options": {"enable_anonymization": True, "enable_embeddings": False},
+                "options": {"enable_embeddings": False},
             },
         )
         assert r.status_code == 200
@@ -158,7 +158,7 @@ def test_e2e_enormous_narrative_anonymized_offsets_and_expected_findings() -> No
             "/api/v1/normalize",
             json={
                 "text": NARRATIVE_ENORMOUS_1,
-                "options": {"enable_anonymization": True, "enable_embeddings": False},
+                "options": {"enable_embeddings": False},
             },
         )
         assert r.status_code == 200
