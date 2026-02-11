@@ -84,6 +84,15 @@ export function useSpeechRecognition() {
     []
   );
 
+  const reset = useMemo(
+    () =>
+      () => {
+        setTranscript('');
+        setError(null);
+      },
+    []
+  );
+
   return {
     supported,
     listening,
@@ -91,6 +100,7 @@ export function useSpeechRecognition() {
     error,
     start,
     stop,
+    reset,
   };
 }
 

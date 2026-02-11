@@ -77,6 +77,10 @@ export default function App() {
       });
       setResult(data);
       setActiveRunId(data.request_id);
+      // UX/LGPD: após sucesso, limpa a entrada para evitar deixar narrativa visível.
+      setText('');
+      speech.stop();
+      speech.reset();
       void loadHistory();
       setTimeout(() => {
         outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });

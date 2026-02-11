@@ -27,8 +27,8 @@ Plus:
 
 ## Demo (Heroku)
 
-- App: `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/`
-- Swagger: `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/docs`
+- App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
+- Swagger: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
   - Obs: usa Heroku Postgres `essential-0` (max $5/mes).
 
 ## Trade-offs Principais

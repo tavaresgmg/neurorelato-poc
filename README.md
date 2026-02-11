@@ -10,9 +10,9 @@ PoC para **normalizacao semantica**: transformar narrativa clinica livre em **da
 
 ## Demo (Heroku)
 
-App: `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/`
-API health: `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/api/v1/health`
-Swagger (OpenAPI): `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/docs`
+App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
+API health: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/api/v1/health`
+Swagger (OpenAPI): `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
 
 ## Como rodar
 
