@@ -80,6 +80,52 @@ Testar múltiplas ocorrências do mesmo sintoma e garantir que o sistema retorne
 """.strip()
 
 
+NARRATIVE_CASE_NEUROBEHAVIORAL_RICH_1 = """
+Relato de Avaliação Neurocomportamental
+Identificação: Paciente de 5 anos e 8 meses, acompanhado pelos genitores.
+
+Queixa Principal
+"Dificuldade de ajuste ao ambiente escolar, labilidade emocional e comportamento motor exacerbado."
+
+Histórico de Desenvolvimento e Comportamento Social
+A mãe relata que o desenvolvimento inicial foi marcado por uma criança "intensa". No cenário atual da pré-escola,
+o relatório pedagógico indica um abismo entre o potencial cognitivo e a execução das tarefas. O paciente demonstra
+um vocabulário rebuscado, mas falha em utilizar a linguagem para a resolução de conflitos simples, frequentemente
+recorrendo a gritos ou ao isolamento quando não é compreendido.
+
+Em situações de lazer compartilhado, o paciente tende a assumir o papel de "monitor": tenta organizar as outras
+crianças e fica profundamente perturbado se os colegas não seguem as regras do jogo exatamente como ele as concebeu.
+Se o grupo não adere ao seu planejamento, ele se retira para uma atividade solitária, onde manipula objetos de forma
+repetitiva para se acalmar.
+
+Padrões de Atenção e Autorregulação
+Oscilação de Foco: Os pais descrevem um fenômeno de "túnel": a criança pode passar horas montando estruturas complexas
+ou pesquisando sobre um assunto específico. No entanto, para atividades de vida diária (vestir-se, comer, guardar
+brinquedos), a distractibilidade é extrema; qualquer ruído ou estímulo visual o faz abandonar a tarefa pela metade.
+
+Controle Inibitório: Há uma dificuldade clara em frear impulsos. O paciente frequentemente atravessa a rua sem olhar,
+toca em objetos proibidos mesmo após orientações sucessivas e interrompe a fala alheia com pensamentos intrusivos.
+
+Rigidez Cognitiva e Perfil Sensorial
+Manutenção da Mesmice: A rotina é descrita como um "campo minado". Existe uma necessidade de controle sobre o ambiente:
+os brinquedos devem ser organizados por uma lógica própria (por cor ou tamanho) e a quebra dessa ordem desencadeia
+crises de choro e agressividade reativa.
+
+Processamento Sensorial: O paciente apresenta sinais de busca e de esquiva sensorial. Ao mesmo tempo em que demonstra
+aversão a texturas de certas roupas (etiquetas e costuras) e ruídos específicos de alta frequência, em ambientes
+ruidosos o comportamento motor se intensifica drasticamente.
+
+Comunicação e Pragmática
+Embora não haja atraso na fala, a pragmática é atípica. O contato visual é descrito pelos pais como "instrumental":
+ele olha para o adulto quando quer algo, mas evita o olhar em momentos de conexão emocional profunda ou broncas.
+
+Objetivo da Consulta
+Registro minucioso de fenótipo comportamental para investigação de neurodivergência.
+Necessário descartar ou confirmar a sobreposição de padrões de desatenção/impulsividade com barreiras na comunicação
+social e flexibilidade cognitiva.
+""".strip()
+
+
 NARRATIVE_ENORMOUS_1 = """
 Consulta clínica (pediatria do desenvolvimento / neuropsiquiatria infantil).
 Data: 2026-02-10. Participantes: mãe, pai e professora (relato escrito).

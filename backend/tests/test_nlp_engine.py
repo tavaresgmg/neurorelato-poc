@@ -93,3 +93,14 @@ def test_negation_detects_nem_and_tampouco() -> None:
     assert imp.negated is True
     assert po.negated is True
     assert st.negated is True
+
+
+def test_assessment_goal_sentence_does_not_count_as_finding() -> None:
+    domains = load_domains(MOCK_ONTOLOGY)
+    text = (
+        "Objetivo da Consulta: Necessário descartar ou confirmar a sobreposição de "
+        "padrões de desatenção/impulsividade com barreiras na comunicação social."
+    )
+    hits = extract_findings(text, domains, embeddings_provider=None)
+    symptoms = {h.symptom for h in hits}
+    assert "impulsividade" not in symptoms

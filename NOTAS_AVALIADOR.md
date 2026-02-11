@@ -16,7 +16,7 @@ Desejavel:
 
 - Gap analysis: retorna dominios pouco explorados com perguntas sugeridas.
 - Resumo tecnico: template (sem LLM).
-- Embeddings: similaridade semantica local (opcional) com fallback.
+- Embeddings: similaridade semantica local (opcional, mas habilitado por padrao na UI) com fallback.
 - Persistencia: Postgres + historico (`GET /api/v1/history`, `GET /api/v1/runs/{id}`).
 
 Plus:

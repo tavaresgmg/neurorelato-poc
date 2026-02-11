@@ -33,7 +33,7 @@ export default function App() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 
   const [text, setText] = useState('');
-  const [enableEmbeddings, setEnableEmbeddings] = useState(false);
+  const [enableEmbeddings, setEnableEmbeddings] = useState(true);
 
   const [loading, setLoading] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);

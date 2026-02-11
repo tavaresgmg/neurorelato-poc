@@ -33,7 +33,9 @@ def create_app(*, database_url: str | None = None, init_db: bool = False) -> Fas
         Evita que o primeiro request com embeddings sofra o custo de download/init.
         Rodamos em background e ignoramos falhas (PoC resiliente).
         """
-        if not (settings.embeddings_warmup or settings.enable_embeddings_by_default):
+        # Warmup deve ser uma escolha explícita: habilitar embeddings por default não implica
+        # baixar modelo no startup (evita surpresas/latência no boot).
+        if not settings.embeddings_warmup:
             return
 
         def _warm() -> None:

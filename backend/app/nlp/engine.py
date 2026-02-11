@@ -23,6 +23,10 @@ NEGATORS = [
     "negada",
 ]
 
+_ASSESSMENT_RE = re.compile(
+    r"\b(objetivo\s+da\s+consulta|necessario\s+descartar|descartar|confirmar|investigacao)\b"
+)
+
 
 SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
     "contato visual reduzido": [
@@ -30,6 +34,8 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("pouco contato visual", 0.85),
         Pattern("evita contato visual", 0.85),
         Pattern("evita olhar nos olhos", 0.85),
+        Pattern("contato visual instrumental", 0.84),
+        Pattern("evita o olhar", 0.82),
         Pattern("desvia o olhar", 0.8),
         Pattern("nao olha nos olhos", 0.88, negation_safe=True),
     ],
@@ -44,20 +50,27 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("isolamento social", 0.92),
         Pattern("se isola", 0.84),
         Pattern("se isola dos outros", 0.84),
+        Pattern("ao isolamento", 0.82),
         Pattern("prefere ficar sozinho", 0.82),
         Pattern("brinca sozinho", 0.82),
+        Pattern("atividade solitaria", 0.82),
+        Pattern("se retira", 0.78),
         Pattern("nao brinca com outras criancas", 0.82, negation_safe=True),
     ],
     "falta de reciprocidade emocional": [
         Pattern("falta de reciprocidade emocional", 0.92),
         Pattern("pouca reciprocidade emocional", 0.86),
         Pattern("nao responde emocionalmente", 0.82, negation_safe=True),
+        Pattern("conexao emocional profunda", 0.82),
+        Pattern("evita o olhar em momentos de conexao emocional", 0.82),
     ],
     "estereotipias motoras": [
         Pattern("estereotipias motoras", 0.92),
         Pattern("estereotipias", 0.85),
         Pattern("estereotipia", 0.82),
         Pattern("movimentos repetitivos", 0.82),
+        Pattern("forma repetitiva", 0.8),
+        Pattern("manipula objetos", 0.8),
         Pattern("balanca as maos", 0.8),
         Pattern("balanca o corpo", 0.8),
     ],
@@ -70,6 +83,10 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("nao tolera mudanca", 0.84, negation_safe=True),
         Pattern("mudanca na rotina", 0.8),
         Pattern("mudou a rotina", 0.8),
+        Pattern("campo minado", 0.78),
+        Pattern("quebra dessa ordem", 0.8),
+        Pattern("necessidade de controle", 0.78),
+        Pattern("nao seguem as regras", 0.8),
     ],
     "interesses hiperfocados": [
         Pattern("interesses hiperfocados", 0.92),
@@ -78,6 +95,9 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("muito fixado em", 0.78),
         Pattern("interesses muito fixos", 0.82),
         Pattern("muito fixo em", 0.78),
+        Pattern("fenomeno de tunel", 0.8),
+        Pattern("pesquisando sobre um assunto", 0.82),
+        Pattern("passar horas montando", 0.82),
     ],
     "sensibilidade sensorial": [
         Pattern("sensibilidade sensorial", 0.92),
@@ -86,6 +106,9 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("sensivel a ruidos", 0.84),
         Pattern("incomoda com sons", 0.8),
         Pattern("tampa os ouvidos", 0.82),
+        Pattern("aversao a texturas", 0.82),
+        Pattern("etiquetas e costuras", 0.82),
+        Pattern("alta frequencia", 0.78),
     ],
     "dificuldade de foco": [
         Pattern("dificuldade de foco", 0.92),
@@ -97,6 +120,9 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("perde o foco rapidamente", 0.84),
         Pattern("perde o foco", 0.78),
         Pattern("se distrai com facilidade", 0.82),
+        Pattern("distractibilidade", 0.82),
+        Pattern("abandona a tarefa", 0.82),
+        Pattern("pela metade", 0.78),
     ],
     "agitação motora": [
         Pattern("agitacao motora", 0.92),
@@ -106,6 +132,8 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("hiperativo", 0.84),
         Pattern("hiperatividade", 0.84),
         Pattern("nao consegue ficar sentado", 0.84, negation_safe=True),
+        Pattern("comportamento motor exacerbado", 0.84),
+        Pattern("comportamento motor se intensifica", 0.84),
     ],
     "impulsividade": [
         Pattern("impulsividade", 0.92),
@@ -114,6 +142,9 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("interrompe conversas", 0.82),
         Pattern("interrompe os outros", 0.82),
         Pattern("nao espera sua vez", 0.82, negation_safe=True),
+        Pattern("atravessa a rua sem olhar", 0.86),
+        Pattern("toca em objetos proibidos", 0.84),
+        Pattern("interrompe a fala", 0.84),
     ],
     "perda de objetos": [
         Pattern("perda de objetos", 0.92),
@@ -164,6 +195,24 @@ def normalize_text(text: str) -> NormalizedText:
             norm_to_orig.append(i)
 
     return NormalizedText(original=text, norm="".join(norm_chars), norm_to_orig=norm_to_orig)
+
+
+def _sentence_bounds(norm: str, idx: int) -> tuple[int, int]:
+    # Best-effort: find sentence-ish boundaries around a match to detect meta-text
+    # like "Objetivo da Consulta: descartar/confirmar...".
+    left = idx
+    while left > 0 and norm[left - 1] not in ".?!\n;:":
+        left -= 1
+    right = idx
+    while right < len(norm) and norm[right] not in ".?!\n;:":
+        right += 1
+    return left, right
+
+
+def _is_assessment_goal_sentence(nt: NormalizedText, start_norm: int) -> bool:
+    s0, s1 = _sentence_bounds(nt.norm, start_norm)
+    snippet = nt.norm[s0:s1]
+    return bool(_ASSESSMENT_RE.search(snippet))
 
 
 _neg_re = re.compile(r"\b(" + "|".join(map(re.escape, NEGATORS)) + r")\b")
@@ -263,6 +312,9 @@ def extract_findings(
 
         for p in patterns:
             for start_norm, end_norm in find_phrase_occurrences(nt.norm, p.phrase):
+                if _is_assessment_goal_sentence(nt, start_norm):
+                    # Evita falso positivo quando o sintoma aparece como objetivo/hipótese.
+                    continue
                 ev = span_to_evidence(nt, start_norm, end_norm)
                 best_score = max(best_score, p.score)
                 neg = is_negated(nt, start_norm, end_norm, pattern=p)

@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from app.main import create_app
 from app.nlp.anonymize import anonymize_text
 from tests.fixtures.narratives import (
+    NARRATIVE_CASE_NEUROBEHAVIORAL_RICH_1,
     NARRATIVE_ENORMOUS_1,
     NARRATIVE_LONG_1,
     NARRATIVE_LONG_2,
@@ -138,6 +139,42 @@ def test_e2e_rejects_too_long_text_with_standard_error_schema() -> None:
         assert r.status_code == 400
         data = r.json()
         assert data["error"]["code"] == "INVALID_INPUT"
+
+
+def test_e2e_clinical_rich_narrative_has_high_recall_and_no_meta_text_false_positive() -> None:
+    """
+    Narrativa clínica rica (estilo relatório): deve ter bom recall por heurística e evitar
+    falso positivo quando o sintoma aparece como objetivo/hipótese (meta-texto).
+    """
+    app = create_app(database_url="sqlite+pysqlite:///:memory:", init_db=True)
+    with TestClient(app) as client:
+        r = client.post(
+            "/api/v1/normalize",
+            json={
+                "text": NARRATIVE_CASE_NEUROBEHAVIORAL_RICH_1,
+                "options": {"enable_embeddings": False},
+            },
+        )
+        assert r.status_code == 200
+        data = r.json()
+
+        symptoms = _symptoms_from_response(data)
+        # DOM_01
+        assert "contato visual reduzido" in symptoms
+        assert "isolamento social" in symptoms
+        # DOM_02
+        assert "insistência nas mesmas rotinas" in symptoms
+        assert "interesses hiperfocados" in symptoms
+        assert "estereotipias motoras" in symptoms
+        assert "sensibilidade sensorial" in symptoms
+        # DOM_03
+        assert "dificuldade de foco" in symptoms
+        assert "agitação motora" in symptoms
+        assert "impulsividade" in symptoms
+
+        # Gap analysis only returns "high"/"medium" gaps. If DOM_01 is absent, it is "low" (ok).
+        gaps_by_domain = {g["domain_id"]: g for g in data["gaps"]}
+        assert gaps_by_domain.get("DOM_01", {}).get("gap_level") != "high"
 
 
 def test_e2e_runs_endpoint_invalid_id_returns_400_standard_error_schema() -> None:

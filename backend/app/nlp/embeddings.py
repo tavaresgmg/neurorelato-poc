@@ -19,7 +19,7 @@ class SentenceSpan:
     end: int  # exclusive
 
 
-_SENT_SPLIT_RE = re.compile(r"[.!?\n;]+")
+_SENT_SPLIT_RE = re.compile(r"[.!?\n;:]+")
 _NEGATORS = (
     "nao",
     "nunca",
@@ -36,6 +36,9 @@ _NEGATORS = (
 )
 _NEG_RE = re.compile(r"\b(" + "|".join(map(re.escape, _NEGATORS)) + r")\b")
 _CONTRAST_RE = re.compile(r"\b(mas|porem|entretanto|contudo|todavia)\b")
+_ASSESSMENT_RE = re.compile(
+    r"\b(objetivo\s+da\s+consulta|necessario\s+descartar|descartar|confirmar|investigacao)\b"
+)
 
 
 def split_sentences(text: str) -> list[SentenceSpan]:
@@ -47,6 +50,13 @@ def split_sentences(text: str) -> list[SentenceSpan]:
         last = end
     spans.extend(_span_from_slice(text, last, len(text)))
     return spans
+
+
+def _sentence_is_assessment_goal(sentence: str) -> bool:
+    # Heurística para evitar falso positivo quando o sintoma aparece como hipótese/objetivo
+    # (ex: "necessário descartar ou confirmar X").
+    s = _normalize_for_negation(sentence)
+    return bool(_ASSESSMENT_RE.search(s))
 
 
 def _span_from_slice(text: str, start: int, end: int) -> list[SentenceSpan]:
@@ -212,6 +222,28 @@ def extract_findings_embeddings(
     if not sentences:
         return []
 
+    def _norm(s: str) -> str:
+        return _normalize_for_negation(s)
+
+    # Âncoras para reduzir falsos positivos em textos longos: só compara sintoma com sentenças
+    # que tenham alguma pista lexical relacionada.
+    anchors: dict[str, tuple[str, ...]] = {
+        "contato visual reduzido": ("olhar", "olhos", "contato visual"),
+        "dificuldade em iniciar interação": ("iniciar", "interacao", "interagir"),
+        "isolamento social": ("isol", "sozinh", "solitari", "retira"),
+        "falta de reciprocidade emocional": ("reciproc", "conexao emocional", "emocional"),
+        "estereotipias motoras": ("repetit", "estereotip", "balanc", "manipula objetos"),
+        "insistência nas mesmas rotinas": ("rotina", "mudanc", "ordem", "regras", "mesmice"),
+        "interesses hiperfocados": ("hiperfoc", "tunel", "horas", "pesquis", "assunto especifico"),
+        "sensibilidade sensorial": ("sensor", "textur", "ruido", "barulho", "etiquet", "costur"),
+        "dificuldade de foco": ("foco", "concentr", "distrai", "distract", "abandona"),
+        "agitação motora": ("agit", "motor", "pular", "hiperativ", "nao para"),
+        "impulsividade": ("impuls", "interromp", "atravessa", "sem olhar", "proibid"),
+        "perda de objetos": ("perde", "objet"),
+    }
+
+    norm_sentences = [_norm(s.text) for s in sentences]
+
     # All symptom labels from ontology.
     symptoms: list[tuple[str, str, str]] = []  # (symptom, domain_id, domain_name)
     for d in domains:
@@ -236,10 +268,18 @@ def extract_findings_embeddings(
 
     hits: list[FindingHit] = []
     for (symptom, domain_id, domain_name), sv in zip(symptoms, sym_vecs, strict=False):
+        candidates = list(range(len(sentences)))
+        a = anchors.get(symptom)
+        if a:
+            candidates = [i for i, s in enumerate(norm_sentences) if any(x in s for x in a)]
+            if not candidates:
+                candidates = list(range(len(sentences)))
+
         best_i = -1
         best = 0.0
         second = 0.0
-        for i, tv in enumerate(sent_vecs):
+        for i in candidates:
+            tv = sent_vecs[i]
             sc = _cosine(sv, tv)
             if sc > best:
                 second = best
@@ -259,6 +299,8 @@ def extract_findings_embeddings(
             continue
 
         ss = sentences[best_i]
+        if _sentence_is_assessment_goal(ss.text):
+            continue
         hits.append(
             FindingHit(
                 symptom=symptom,

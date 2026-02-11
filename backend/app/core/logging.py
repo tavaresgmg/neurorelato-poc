@@ -27,10 +27,22 @@ def redact_pii(text: str) -> str:
 class PIIRedactionFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         try:
-            msg = record.getMessage()
-            msg = redact_pii(msg)
-            record.msg = msg
-            record.args = ()
+            # Uvicorn access logs use a special formatter that expects `record.args` intact.
+            # Do not touch it, or we can break access logging.
+            if record.name == "uvicorn.access":
+                return True
+
+            # Redact message template when it is a plain string (keeps %-placeholders).
+            if isinstance(record.msg, str):
+                record.msg = redact_pii(record.msg)
+
+            # Redact args without forcing message formatting (keeps downstream formatters happy).
+            if isinstance(record.args, tuple):
+                record.args = tuple(redact_pii(a) if isinstance(a, str) else a for a in record.args)
+            elif isinstance(record.args, dict):
+                record.args = {
+                    k: (redact_pii(v) if isinstance(v, str) else v) for k, v in record.args.items()
+                }
         except Exception:
             # Never break logging.
             return True
@@ -56,7 +68,8 @@ def install_pii_redaction_filters() -> None:
     logging.getLogger().addFilter(flt)
 
     # Uvicorn loggers (when running in container/Heroku).
-    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+    # Intentionally avoid `uvicorn.access` to not interfere with its AccessFormatter.
+    for name in ("uvicorn", "uvicorn.error"):
         logging.getLogger(name).addFilter(flt)
 
     _INSTALLED = True

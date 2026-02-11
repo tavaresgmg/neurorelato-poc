@@ -25,4 +25,20 @@ def test_logging_filter_redacts_message_in_place() -> None:
     )
     flt = PIIRedactionFilter()
     assert flt.filter(rec) is True
-    assert "[EMAIL]" in str(rec.msg)
+    assert rec.msg == "email=%s"
+    assert rec.args == ("[EMAIL]",)
+
+
+def test_logging_filter_does_not_break_uvicorn_access_records() -> None:
+    rec = logging.LogRecord(
+        name="uvicorn.access",
+        level=logging.INFO,
+        pathname=__file__,
+        lineno=1,
+        msg='%s - "%s %s HTTP/%s" %d',
+        args=("127.0.0.1:123", "GET", "/api/v1/health", "1.1", 200),
+        exc_info=None,
+    )
+    flt = PIIRedactionFilter()
+    assert flt.filter(rec) is True
+    assert rec.args[0] == "127.0.0.1:123"
