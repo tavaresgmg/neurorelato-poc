@@ -152,6 +152,7 @@ Remoto:
 - Troubleshooting rapido: se o Grafana mostrar "No data", valide os targets do Prometheus e as vars `PN_METRICS_BASIC_AUTH_*` no app `neurorelatopoc-prometheus`.
 - Deploy padronizado da observabilidade: `./scripts/deploy-observability.sh [prometheus|grafana|all]`
 - Smoke check pos-release: `./scripts/observability-smoke.sh`
+- O smoke check aplica retry para reduzir falso negativo em janela curta de scrape/restart.
 
 ## Diferenciais Técnicos (objetivos)
 

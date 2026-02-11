@@ -13,36 +13,23 @@ import {
   Tooltip,
   UnstyledButton,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { useMantineColorScheme } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { useDisclosure } from '@mantine/hooks';
 import { IconBrain, IconInfoCircle, IconMoon, IconSun } from '@tabler/icons-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-import { getHistory, getRun, normalize } from './api/client';
-import type { Finding, HistoryItem, NormalizeResponse } from './api/types';
+import type { Finding } from './api/types';
 import { AboutPanel } from './components/AboutPanel';
 import { EvidenceModal, type EvidenceModalState } from './components/EvidenceModal';
 import { HistoryPanel } from './components/HistoryPanel';
 import { InputPanel } from './components/InputPanel';
 import { OutputPanel } from './components/OutputPanel';
+import { useConsultationController } from './hooks/useConsultationController';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 
 export default function App() {
   const [navOpened, { toggle: toggleNav }] = useDisclosure(false);
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-
-  const [text, setText] = useState('');
-  const [enableEmbeddings, setEnableEmbeddings] = useState(true);
-
-  const [loading, setLoading] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
-  const [loadingRun, setLoadingRun] = useState(false);
-  const [openingRunId, setOpeningRunId] = useState<string | null>(null);
-
-  const [result, setResult] = useState<NormalizeResponse | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [activeRunId, setActiveRunId] = useState<string | null>(null);
 
   const [evidenceModal, setEvidenceModal] = useState<EvidenceModalState | null>(null);
   const [easterOpened, { open: openEaster, close: closeEaster }] = useDisclosure(false);
@@ -50,89 +37,24 @@ export default function App() {
 
   const outputRef = useRef<HTMLDivElement>(null);
   const speech = useSpeechRecognition();
-  const canProcess = useMemo(() => text.trim().length > 0 && !loading, [text, loading]);
 
-  async function loadHistory() {
-    setLoadingHistory(true);
-    try {
-      const items = await getHistory(20);
-      setHistory(items);
-    } catch {
-      // UX extra: não deve bloquear o fluxo principal.
-    } finally {
-      setLoadingHistory(false);
-    }
-  }
-
-  useEffect(() => {
-    void loadHistory();
+  const handleResultReady = useCallback(() => {
+    setTimeout(() => {
+      outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }, []);
 
-  async function onProcess() {
-    setLoading(true);
-    try {
-      const data = await normalize({
-        text,
-        options: { enable_embeddings: enableEmbeddings },
-      });
-      setResult(data);
-      setActiveRunId(data.request_id);
-      // UX/LGPD: após sucesso, limpa a entrada para evitar deixar narrativa visível.
-      setText('');
-      speech.stop();
-      speech.reset();
-      void loadHistory();
-      setTimeout(() => {
-        outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    } catch (err) {
-      notifications.show({
-        title: 'Falha ao processar',
-        message: err instanceof Error ? err.message : 'Erro desconhecido',
-        color: 'red',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function onOpenRun(id: string) {
-    setLoadingRun(true);
-    setOpeningRunId(id);
-    try {
-      const data = await getRun(id);
-      setResult(data);
-      setActiveRunId(data.request_id);
-      setTimeout(() => {
-        outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    } catch (err) {
-      notifications.show({
-        title: 'Falha ao carregar',
-        message: err instanceof Error ? err.message : 'Erro desconhecido',
-        color: 'red',
-      });
-    } finally {
-      setLoadingRun(false);
-      setOpeningRunId(null);
-    }
-  }
-
-  function onUseTranscript() {
-    if (!speech.transcript) return;
-    setText((t) => (t ? `${t}\n\n${speech.transcript}` : speech.transcript));
-  }
-
-  function onInsertQuestion(question: string) {
-    setText((t) => (t ? `${t}\n\n${question}` : question));
-  }
+  const controller = useConsultationController({
+    speech,
+    onResultReady: handleResultReady,
+  });
 
   function openEvidence(f: Finding) {
     setEvidenceModal({
       title: f.symptom,
       evidence: f.evidence || [],
       meta: { score: f.score, method: f.method, negated: f.negated },
-      sourceText: result?.input?.redacted_text ?? null,
+      sourceText: controller.result?.input?.redacted_text ?? null,
     });
   }
 
@@ -215,13 +137,13 @@ export default function App() {
       >
         <AppShell.Section grow style={{ overflow: 'auto' }}>
           <HistoryPanel
-            history={history}
-            loadingHistory={loadingHistory}
-            loadingRun={loadingRun}
-            openingRunId={openingRunId}
-            activeRunId={activeRunId}
-            onRefresh={() => void loadHistory()}
-            onOpenRun={(id) => void onOpenRun(id)}
+            history={controller.history}
+            loadingHistory={controller.loadingHistory}
+            loadingRun={controller.loadingRun}
+            openingRunId={controller.openingRunId}
+            activeRunId={controller.activeRunId}
+            onRefresh={() => void controller.loadHistory()}
+            onOpenRun={(id) => void controller.onOpenRun(id)}
           />
         </AppShell.Section>
 
@@ -238,24 +160,24 @@ export default function App() {
         <Container size="lg">
           <Stack gap="md">
             <InputPanel
-              text={text}
-              onChangeText={setText}
-              enableEmbeddings={enableEmbeddings}
-              onChangeEnableEmbeddings={setEnableEmbeddings}
-              canProcess={canProcess}
-              loading={loading}
-              onProcess={onProcess}
-              onClear={() => setText('')}
+              text={controller.text}
+              onChangeText={controller.setText}
+              enableEmbeddings={controller.enableEmbeddings}
+              onChangeEnableEmbeddings={controller.setEnableEmbeddings}
+              canProcess={controller.canProcess}
+              loading={controller.loading}
+              onProcess={controller.onProcess}
+              onClear={controller.onClearText}
               speech={speech}
-              onUseTranscript={onUseTranscript}
+              onUseTranscript={controller.onUseTranscript}
             />
 
             <OutputPanel
               ref={outputRef}
-              result={result}
-              loading={loading}
+              result={controller.result}
+              loading={controller.loading}
               onOpenEvidence={openEvidence}
-              onInsertQuestion={onInsertQuestion}
+              onInsertQuestion={controller.onInsertQuestion}
             />
           </Stack>
 
