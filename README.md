@@ -1,107 +1,71 @@
 # NeuroRelato (PoC)
 
-PoC de **normalizacao semantica**: transformar narrativa clinica livre em **dados estruturados**
-(por dominio/sintoma), com **evidencias** (rastreabilidade) e **lacunas informacionais**
-(perguntas sugeridas). **Nao diagnostica**.
+PoC de normalizacao semantica para transformar narrativa clinica livre em dado estruturado com evidencias e lacunas informacionais. Nao diagnostica.
 
-## Atalhos
+## Entrega em 1 minuto
 
-- Trade-offs, decisoes e "o que eu faria diferente": `NOTAS_AVALIADOR.md`
-- README backend: `backend/README.md`
-- README frontend: `frontend/README.md`
+- API principal: `POST /api/v1/normalize`.
+- Saida estruturada por dominio/sintoma com evidencias e offsets (XAI).
+- Gap analysis com perguntas sugeridas.
+- Persistencia em Postgres com historico (`GET /api/v1/history`, `GET /api/v1/runs/{id}`).
+- Anonimizacao sempre ativa no backend antes de processar/persistir.
+- Embeddings locais (sem LLM) com fallback para heuristicas.
 
-## O Que Esta PoC Entrega (mapa rapido do desafio)
+## Atendimento ao Edital
 
-- API: `POST /api/v1/normalize` (extrai achados por dominio/sintoma + gaps + resumo tecnico).
-- XAI: para cada achado, retorna evidencias (trechos) + offsets.
-- Gap analysis: identifica dominios pouco explorados e sugere perguntas.
-- Embeddings (sem LLM): similaridade semantica local (CPU) como fallback, com filtros conservadores.
-- Persistencia: Postgres + historico (`GET /api/v1/history`, `GET /api/v1/runs/{id}`).
-- LGPD (Plus): anonimiza no backend **antes** de processar e persistir (sem depender de toggle no frontend).
-- Audio (Plus): ditado via Web Speech API (dependente do navegador).
-- Observabilidade basica (Plus): Prometheus + Grafana com dashboard de latencia/erros/uso.
+### Essencial
 
-## Como rodar
+| Item                                             | Status   | Evidencia                                                                                                   |
+| ------------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------- |
+| Backend API para texto bruto -> dado estruturado | Atendido | `POST /api/v1/normalize`, `backend/app/api/v1/routes.py`                                                    |
+| Extracao de entidades para ontologia alvo        | Atendido | `backend/app/nlp/engine.py`, `backend/app/nlp/ontology.py`                                                  |
+| Frontend funcional para uso medico               | Atendido | `frontend/src/App.tsx`, `frontend/src/components/InputPanel.tsx`, `frontend/src/components/OutputPanel.tsx` |
+| Qualidade de codigo (componentizacao/separacao)  | Atendido | backend modular (`app/api`, `app/nlp`, `app/db`), frontend componentizado (`frontend/src/components`)       |
 
-### Dev (Docker)
+### Desejavel
+
+| Item                                  | Status   | Evidencia                                                                              |
+| ------------------------------------- | -------- | -------------------------------------------------------------------------------------- |
+| Gap analysis por dominio              | Atendido | `compute_gaps` em `backend/app/nlp/engine.py`, `frontend/src/components/GapsPanel.tsx` |
+| Resumo tecnico estilo prontuario      | Atendido | `backend/app/nlp/summary.py` (`generated_by=template`)                                 |
+| Similaridade semantica com embeddings | Atendido | `backend/app/nlp/embeddings.py`                                                        |
+| Persistencia/historico em banco       | Atendido | `backend/app/db/models.py`, `GET /api/v1/history`, `GET /api/v1/runs/{id}`             |
+
+### Plus
+
+| Item                                               | Status   | Evidencia                                                                              |
+| -------------------------------------------------- | -------- | -------------------------------------------------------------------------------------- |
+| Pipeline de anonimização antes de processar/salvar | Atendido | `backend/app/nlp/anonymize.py`, `backend/app/api/v1/routes.py`                         |
+| Explainable AI (trechos + offsets)                 | Atendido | campo `evidence` + `frontend/src/components/EvidenceModal.tsx`                         |
+| Interface por audio                                | Atendido | `frontend/src/hooks/useSpeechRecognition.ts`, `frontend/src/components/VoiceInput.tsx` |
+
+## Como Rodar
+
+### Docker (recomendado)
 
 ```bash
 docker compose up --build
 ```
 
-Frontend: `http://localhost:5173` (ou `PN_FRONTEND_PORT`)
-Backend health: `http://localhost:8000/api/v1/health` (ou `PN_BACKEND_PORT`)
-Swagger (OpenAPI): `http://localhost:8000/docs` (alternativo: `http://localhost:8000/redoc`)
-O backend executa `alembic upgrade head` no startup (dev) para manter o schema do Postgres atualizado.
+- Frontend: `http://localhost:5173` (ou `PN_FRONTEND_PORT`)
+- Backend health: `http://localhost:8000/api/v1/health` (ou `PN_BACKEND_PORT`)
+- Swagger: `http://localhost:8000/docs` (alternativo: `http://localhost:8000/redoc`)
 
-Se alguma porta estiver ocupada, use overrides:
+Se precisar trocar portas:
 
 ```bash
 PN_FRONTEND_PORT=5174 PN_BACKEND_PORT=8001 PN_DB_PORT=5433 docker compose up --build
 ```
 
-### Observabilidade (Prometheus + Grafana)
-
-Ao subir via `docker compose`, os serviços de observabilidade também sobem:
-
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000`
-  - login: `admin`
-  - senha: `admin`
-- Métricas do backend: `http://localhost:8000/metrics`
-
-Remoto (Heroku):
-
-- Métricas do backend: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/metrics`
-- Prometheus: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/`
-  - health: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/-/healthy`
-  - targets ativos: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/api/v1/targets?state=active`
-- Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/`
-  - login: `admin`
-  - senha: `admin`
-  - dashboard: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/d/neurorelato-observability/neurorelato-observabilidade-poc?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s`
-
-O endpoint `/metrics` não inclui PII em labels. Se o Basic Auth estiver habilitado, `/metrics` exige autenticação.
-
-Dashboard (Grafana):
-
-- `NeuroRelato - Observabilidade (PoC)` (já provisionado)
-  - URL: `http://localhost:3000/d/neurorelato-observability/neurorelato-observabilidade-poc`
-
-## Demo (Heroku)
-
-- App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
-- API health: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/api/v1/health`
-- Swagger (OpenAPI): `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
-- OpenAPI JSON: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/openapi.json`
-
-### Como testar online (rapido)
-
-1. Abra o app (link acima)
-2. Cole um relato em **Entrada**
-3. Clique em **Processar**
-4. Valide:
-   - achados por dominio/sintoma
-   - lacunas (perguntas sugeridas)
-   - evidencias (trechos e offsets; rastreabilidade)
-
-### Testes e qualidade
+### Local (sem Docker)
 
 Backend:
 
 ```bash
 cd backend
 uv sync --frozen --group dev
-uv run ruff check .
-uv run mypy .
-uv run pytest --cov=app
-```
-
-Benchmark (opcional, offline; gera baseline simples de acuracia/latencia):
-
-```bash
-cd backend
-uv run python tools/benchmark.py --runs 20
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload
 ```
 
 Frontend:
@@ -109,22 +73,67 @@ Frontend:
 ```bash
 cd frontend
 npm ci
+npm run dev
+```
+
+## Testes e Qualidade
+
+Backend:
+
+```bash
+cd backend
+uv run ruff check .
+uv run python -m mypy app
+uv run pytest --cov=app
+```
+
+Frontend:
+
+```bash
+cd frontend
 npm run lint
 npm run typecheck
 npm run test:coverage
 ```
 
-### Demo (Basic Auth, opcional)
+Benchmark offline (opcional):
 
-Defina `PN_BASIC_AUTH_USER` e `PN_BASIC_AUTH_PASSWORD` (Heroku Config Vars) para exigir autenticação básica no app.
+```bash
+cd backend
+uv run python tools/benchmark.py --runs 20
+```
 
-Privacidade (demo):
+## Demo e Observabilidade
 
-- A anonimização roda sempre no backend (sem depender de toggle do cliente).
-- `PN_ENABLE_EMBEDDINGS_BY_DEFAULT=true` liga embeddings por default (o primeiro uso pode baixar o modelo).
-- `PN_EMBEDDINGS_WARMUP=true` tenta aquecer embeddings no startup (background) para reduzir latência do primeiro request.
+### Demo (Heroku)
 
-LGPD (importante):
+- App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
+- API health: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/api/v1/health`
+- Swagger: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
+- OpenAPI JSON: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/openapi.json`
 
-- A API não retorna valores brutos de input em erros de validação (evita vazar narrativa clínica em `details`).
-- O backend não persiste texto bruto; persiste apenas `text_redacted` quando a anonimização está ativa.
+### Observabilidade
+
+Local:
+
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000` (login `admin` / senha `admin`)
+- Backend metrics: `http://localhost:8000/metrics`
+
+Remoto:
+
+- Métricas backend: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/metrics`
+- Prometheus: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/`
+  - health: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/-/healthy`
+  - targets: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/api/v1/targets?state=active`
+- Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/` (login `admin` / senha `admin`)
+- Dashboard: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/d/neurorelato-observability/neurorelato-observabilidade-poc?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s`
+
+## Limitações Conhecidas
+
+- Audio depende da Web Speech API do navegador; sem suporte, o botão de ditado fica desabilitado (sem fallback local).
+- Compatibilidade de audio nesta PoC: Chrome (desktop/Android), Edge (Chromium), Safari (macOS/iOS) e derivados Chromium (pode variar por permissao/politica).
+- Anonimizacao é heuristica; reduz risco, mas nao garante 100% de acerto para nomes.
+- Negacao/temporalidade usa heuristicas simples.
+- Primeiro uso de embeddings pode ter latencia maior por inicializacao/download.
+- A API remove `input` de erros de validacao e nao persiste texto bruto.
