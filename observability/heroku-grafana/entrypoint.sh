@@ -12,4 +12,9 @@ if [ -n "${PORT:-}" ]; then
   export GF_SERVER_HTTP_PORT="${PORT}"
 fi
 
+# Garante que o login efetivo acompanhe o config var do Heroku e evita drift.
+if [ -n "${GF_SECURITY_ADMIN_PASSWORD:-}" ]; then
+  grafana cli --homepath /usr/share/grafana admin reset-admin-password "${GF_SECURITY_ADMIN_PASSWORD}" >/dev/null
+fi
+
 exec /run.sh

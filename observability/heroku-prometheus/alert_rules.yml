@@ -1,0 +1,11 @@
+groups:
+  - name: neurorelato-alerts
+    rules:
+      - alert: NeurorelatoBackendDown
+        expr: up{job="neurorelato-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend indisponivel para scrape"
+          description: "Prometheus nao conseguiu coletar metricas do backend por mais de 2 minutos."
