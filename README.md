@@ -159,7 +159,6 @@ Remoto:
 - Degradacao graciosa: falha de embeddings nao gera 500; fluxo segue com heuristicas.
 - XAI no output: achados com trechos originais e offsets para rastreabilidade.
 - Observabilidade ativa: alerta `NeurorelatoBackendDown` e smoke check pos-release automatizado.
-- Audio com fallback de UX: sem suporte Web Speech API, o ditado e desabilitado de forma segura.
 
 ## Limitações Conhecidas
 
