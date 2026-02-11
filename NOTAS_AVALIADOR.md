@@ -24,12 +24,16 @@ Plus:
 - Anonimizacao: mascara email/telefone/CPF, datas comuns (dd/mm/aaaa) e heuristica de nome (PoC).
 - XAI: evidencias com trechos + offsets; UI mostra contexto e texto processado quando anonimizado.
 - Audio: ditado via Web Speech API (dependente do navegador).
-- Observabilidade (local): Prometheus + Grafana com métricas HTTP e métricas do pipeline (`/metrics`, `pn_*`).
+- Observabilidade basica (local + remoto): Prometheus + Grafana com métricas HTTP e métricas do pipeline (`/metrics`, `pn_*`).
 
 ## Demo (Heroku)
 
 - App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
 - Swagger: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
+- Métricas backend: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/metrics`
+- Prometheus: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/`
+- Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/` (login `admin` / senha `admin`)
+- Dashboard Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/d/neurorelato-observability/neurorelato-observabilidade-poc?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s`
   - DB: Heroku Postgres `essential-0` (max $5/mes).
 
 ## Trade-offs Principais

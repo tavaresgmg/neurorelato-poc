@@ -1,0 +1,85 @@
+{
+  "uid": "neurorelato-observability",
+  "title": "NeuroRelato - Observabilidade (PoC)",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "tags": ["poc", "neurorelato"],
+  "timezone": "browser",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Requests/s por handler",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(http_requests_total[1m])) by (handler)", "legendFormat": "{{handler}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Erros 5xx/s (global)",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))", "legendFormat": "5xx/s" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 - /api/v1/normalize (tempo total, segundos)",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(pn_normalize_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 - Motor NLP (segundos)",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(pn_extract_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Embeddings: habilitados e falhas (rate)",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(pn_embeddings_enabled_total[5m])", "legendFormat": "enabled/s" },
+        { "refId": "B", "expr": "rate(pn_embeddings_runtime_error_total[5m])", "legendFormat": "runtime_error/s" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Achados extraídos (rate) por domínio",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(pn_findings_total[5m])) by (domain_id)", "legendFormat": "{{domain_id}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Gaps retornados (rate) por severidade",
+      "gridPos": { "x": 0, "y": 24, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(pn_gaps_total[5m])) by (gap_level)", "legendFormat": "{{gap_level}}" }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,18 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    orgId: 1
+    type: prometheus
+    access: proxy
+    # URL do app Prometheus no Heroku (provisionado após deploy).
+    url: ${PN_PROMETHEUS_URL}
+    uid: prometheus
+    isDefault: true
+    version: 1
+    editable: true
+    jsonData:
+      httpMethod: POST
+      prometheusType: Prometheus
+      timeInterval: 10s
+

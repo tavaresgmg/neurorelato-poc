@@ -19,6 +19,7 @@ PoC de **normalizacao semantica**: transformar narrativa clinica livre em **dado
 - Persistencia: Postgres + historico (`GET /api/v1/history`, `GET /api/v1/runs/{id}`).
 - LGPD (Plus): anonimiza no backend **antes** de processar e persistir (sem depender de toggle no frontend).
 - Audio (Plus): ditado via Web Speech API (dependente do navegador).
+- Observabilidade basica (Plus): Prometheus + Grafana com dashboard de latencia/erros/uso.
 
 ## Como rodar
 
@@ -49,7 +50,16 @@ Ao subir via `docker compose`, os serviços de observabilidade também sobem:
   - senha: `admin`
 - Métricas do backend: `http://localhost:8000/metrics`
 
-Remoto (Heroku): `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/metrics`
+Remoto (Heroku):
+
+- Métricas do backend: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/metrics`
+- Prometheus: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/`
+  - health: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/-/healthy`
+  - targets ativos: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/api/v1/targets?state=active`
+- Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/`
+  - login: `admin`
+  - senha: `admin`
+  - dashboard: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/d/neurorelato-observability/neurorelato-observabilidade-poc?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s`
 
 O endpoint `/metrics` não inclui PII em labels. Se o Basic Auth estiver habilitado, `/metrics` exige autenticação.
 
