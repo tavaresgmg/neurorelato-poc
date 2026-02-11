@@ -55,6 +55,6 @@
 ## Evidências de validação (verified_by)
 
 - Backend: `uv run ruff check .`, `uv run python -m mypy app`, `uv run python -m pytest --cov=app`.
-- Frontend: `npm run lint`, `npm run typecheck`, `npm run test -- --run`.
+- Frontend: `npm run lint`, `npm run typecheck`, `npm run test:coverage`.
 - Benchmark offline: `uv run python tools/benchmark.py --format json --runs 20`.
 - Cobertura (local, 2026-02-11): backend 94%; frontend 91.26% statements.

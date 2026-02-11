@@ -39,6 +39,19 @@ PoC de normalizacao semantica para transformar narrativa clinica livre em dado e
 | Explainable AI (trechos + offsets)                 | Atendido | campo `evidence` + `frontend/src/components/EvidenceModal.tsx`                         |
 | Interface por audio                                | Atendido | `frontend/src/hooks/useSpeechRecognition.ts`, `frontend/src/components/VoiceInput.tsx` |
 
+## Decisões de Arquitetura
+
+- Monolito modular na PoC para reduzir risco e garantir entrega ponta a ponta no prazo.
+- Pipeline NLP hibrido (heuristica + embeddings) para equilibrar explicabilidade e recall sem depender de LLM externo.
+- Persistencia orientada a privacidade: armazenamento de `text_redacted` e nao do texto bruto, reduzindo risco LGPD.
+- Observabilidade com Prometheus/Grafana para monitorar disponibilidade, latencia e saude operacional.
+
+## Bibliotecas de NLP/IA e por quê
+
+- `fastembed` (ONNX local em CPU): similaridade semantica sem dependencia de servico externo.
+- `prometheus-fastapi-instrumentator`: metricas HTTP e de pipeline (`pn_*`) com integracao simples em FastAPI.
+- Heuristicas de regex/normalizacao/negacao em pt-BR: comportamento deterministico, rastreavel e explicavel para auditoria clinica.
+
 ## Como Rodar
 
 ### Docker (recomendado)
@@ -112,6 +125,8 @@ uv run python tools/benchmark.py --runs 20
 
 ### Demo (Heroku)
 
+- App, Swagger, OpenAPI e `/metrics` estao protegidos por Basic Auth no ambiente remoto.
+- Credenciais do ambiente de avaliacao sao compartilhadas por canal seguro com o avaliador.
 - App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
 - API health: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/api/v1/health`
 - Swagger: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
@@ -122,7 +137,7 @@ uv run python tools/benchmark.py --runs 20
 Local:
 
 - Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000` (credenciais no arquivo local `ACESSOS_PRIVADOS.txt`)
+- Grafana: `http://localhost:3000` (default docker compose: `admin` / `admin`)
 - Backend metrics: `http://localhost:8000/metrics`
 
 Remoto:
@@ -131,12 +146,20 @@ Remoto:
 - Prometheus: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/`
   - health: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/-/healthy`
   - targets: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/api/v1/targets?state=active`
-- Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/` (credenciais no arquivo local `ACESSOS_PRIVADOS.txt`)
+- Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/`
 - Dashboard: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/d/neurorelato-observability/neurorelato-observabilidade-poc?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s`
 - Alertas (Prometheus API): `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/api/v1/alerts` (inclui `NeurorelatoBackendDown`)
 - Troubleshooting rapido: se o Grafana mostrar "No data", valide os targets do Prometheus e as vars `PN_METRICS_BASIC_AUTH_*` no app `neurorelatopoc-prometheus`.
 - Deploy padronizado da observabilidade: `./scripts/deploy-observability.sh [prometheus|grafana|all]`
 - Smoke check pos-release: `./scripts/observability-smoke.sh`
+
+## Diferenciais Técnicos (objetivos)
+
+- Cobertura atual: backend 94% e frontend 91.26% (ultima validacao local em 2026-02-11).
+- Degradacao graciosa: falha de embeddings nao gera 500; fluxo segue com heuristicas.
+- XAI no output: achados com trechos originais e offsets para rastreabilidade.
+- Observabilidade ativa: alerta `NeurorelatoBackendDown` e smoke check pos-release automatizado.
+- Audio com fallback de UX: sem suporte Web Speech API, o ditado e desabilitado de forma segura.
 
 ## Limitações Conhecidas
 
