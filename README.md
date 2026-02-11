@@ -84,7 +84,7 @@ Backend:
 cd backend
 uv run ruff check .
 uv run python -m mypy app
-uv run pytest --cov=app
+uv run python -m pytest --cov=app
 ```
 
 Frontend:
@@ -95,6 +95,11 @@ npm run lint
 npm run typecheck
 npm run test:coverage
 ```
+
+Cobertura:
+
+- Backend: cobertura atual 94% (ultima validacao local em 2026-02-11), com gate no CI de no minimo 90% (`--cov-fail-under=90`).
+- Frontend: cobertura atual 91.26% statements (ultima validacao local em 2026-02-11).
 
 Benchmark offline (opcional):
 
@@ -117,7 +122,7 @@ uv run python tools/benchmark.py --runs 20
 Local:
 
 - Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000` (login `admin` / senha `admin`)
+- Grafana: `http://localhost:3000` (credenciais no arquivo local `ACESSOS_PRIVADOS.txt`)
 - Backend metrics: `http://localhost:8000/metrics`
 
 Remoto:
@@ -126,7 +131,7 @@ Remoto:
 - Prometheus: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/`
   - health: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/-/healthy`
   - targets: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/api/v1/targets?state=active`
-- Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/` (login `admin` / senha `admin`)
+- Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/` (credenciais no arquivo local `ACESSOS_PRIVADOS.txt`)
 - Dashboard: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/d/neurorelato-observability/neurorelato-observabilidade-poc?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s`
 
 ## Limitações Conhecidas

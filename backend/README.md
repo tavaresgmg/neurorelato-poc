@@ -29,8 +29,13 @@ uv run uvicorn app.main:app --reload
 cd backend
 uv run ruff check .
 uv run python -m mypy app
-uv run pytest --cov=app
+uv run python -m pytest --cov=app
 ```
+
+Cobertura:
+
+- Atual (local, 2026-02-11): 94%.
+- CI: falha abaixo de 90% (`--cov-fail-under=90`).
 
 ## Variáveis de Ambiente
 

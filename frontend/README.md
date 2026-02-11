@@ -31,6 +31,8 @@ npm run typecheck
 npm run test:coverage
 ```
 
+Cobertura atual (local, 2026-02-11): 91.26% statements.
+
 ## Observações
 
 - O proxy do Vite aponta `/api/*` para o backend (evita CORS em dev).

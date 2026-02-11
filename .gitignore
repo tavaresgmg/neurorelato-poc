@@ -56,3 +56,6 @@ IPENEURO*.pdf
 
 # Docs locais (não subir no GitHub conforme combinado)
 docs/
+
+# Arquivo local de acessos (não versionar)
+ACESSOS_PRIVADOS.txt
