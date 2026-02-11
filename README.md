@@ -1,18 +1,24 @@
 # NeuroRelato (PoC)
 
-PoC para **normalizacao semantica**: transformar narrativa clinica livre em **dados estruturados** (por dominio/sintoma), com **evidencias** (rastreabilidade) e **lacunas informacionais** (perguntas sugeridas). **Nao diagnostica**.
+PoC de **normalizacao semantica**: transformar narrativa clinica livre em **dados estruturados**
+(por dominio/sintoma), com **evidencias** (rastreabilidade) e **lacunas informacionais**
+(perguntas sugeridas). **Nao diagnostica**.
 
 ## Atalhos
 
-- Trade-offs e decisoes: `NOTAS_AVALIADOR.md`
+- Trade-offs, decisoes e "o que eu faria diferente": `NOTAS_AVALIADOR.md`
 - README backend: `backend/README.md`
 - README frontend: `frontend/README.md`
 
-## Demo (Heroku)
+## O Que Esta PoC Entrega (mapa rapido do desafio)
 
-App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
-API health: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/api/v1/health`
-Swagger (OpenAPI): `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
+- API: `POST /api/v1/normalize` (extrai achados por dominio/sintoma + gaps + resumo tecnico).
+- XAI: para cada achado, retorna evidencias (trechos) + offsets.
+- Gap analysis: identifica dominios pouco explorados e sugere perguntas.
+- Embeddings (sem LLM): similaridade semantica local (CPU) como fallback, com filtros conservadores.
+- Persistencia: Postgres + historico (`GET /api/v1/history`, `GET /api/v1/runs/{id}`).
+- LGPD (Plus): anonimiza no backend **antes** de processar e persistir (sem depender de toggle no frontend).
+- Audio (Plus): ditado via Web Speech API (dependente do navegador).
 
 ## Como rodar
 
@@ -22,17 +28,52 @@ Swagger (OpenAPI): `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
 docker compose up --build
 ```
 
-Frontend: `http://localhost:5173`
-Backend: `http://localhost:8000/api/v1/health`
+Frontend: `http://localhost:5173` (ou `PN_FRONTEND_PORT`)
+Backend health: `http://localhost:8000/api/v1/health` (ou `PN_BACKEND_PORT`)
 Swagger (OpenAPI): `http://localhost:8000/docs` (alternativo: `http://localhost:8000/redoc`)
-
-Obs: o backend executa `alembic upgrade head` no startup (dev) para manter o schema do Postgres atualizado.
+O backend executa `alembic upgrade head` no startup (dev) para manter o schema do Postgres atualizado.
 
 Se alguma porta estiver ocupada, use overrides:
 
 ```bash
 PN_FRONTEND_PORT=5174 PN_BACKEND_PORT=8001 PN_DB_PORT=5433 docker compose up --build
 ```
+
+### Observabilidade (Prometheus + Grafana)
+
+Ao subir via `docker compose`, os serviços de observabilidade também sobem:
+
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
+  - login: `admin`
+  - senha: `admin`
+- Métricas do backend: `http://localhost:8000/metrics`
+
+Remoto (Heroku): `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/metrics`
+
+O endpoint `/metrics` não inclui PII em labels. Se o Basic Auth estiver habilitado, `/metrics` exige autenticação.
+
+Dashboard (Grafana):
+
+- `NeuroRelato - Observabilidade (PoC)` (já provisionado)
+  - URL: `http://localhost:3000/d/neurorelato-observability/neurorelato-observabilidade-poc`
+
+## Demo (Heroku)
+
+- App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
+- API health: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/api/v1/health`
+- Swagger (OpenAPI): `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
+- OpenAPI JSON: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/openapi.json`
+
+### Como testar online (rapido)
+
+1. Abra o app (link acima)
+2. Cole um relato em **Entrada**
+3. Clique em **Processar**
+4. Valide:
+   - achados por dominio/sintoma
+   - lacunas (perguntas sugeridas)
+   - evidencias (trechos e offsets; rastreabilidade)
 
 ### Testes e qualidade
 
@@ -63,7 +104,7 @@ npm run typecheck
 npm run test:coverage
 ```
 
-### Demo (Basic Auth)
+### Demo (Basic Auth, opcional)
 
 Defina `PN_BASIC_AUTH_USER` e `PN_BASIC_AUTH_PASSWORD` (Heroku Config Vars) para exigir autenticação básica no app.
 

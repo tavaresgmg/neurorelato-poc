@@ -150,6 +150,42 @@ desencadeiam crises de choro e rigidez.
 """.strip()
 
 
+NARRATIVE_CASE_PROFILE_MEDIUM_1 = """
+Relatório de Perfil Comportamental e Adaptativo
+Status: Avaliação Inicial (Nível de Complexidade Médio) Foco: Domínios de Atenção, Controle Inibitório e Dinâmica Social.
+
+1. Domínio da Autorregulação Motora
+O paciente apresenta um padrão de "busca por movimento" que permeia todas as atividades.
+
+Observação: Não se trata apenas de correr, mas de uma incapacidade de manter o tônus muscular em repouso. Sentado, o paciente
+manuseia objetos de forma inquieta, balança as pernas ou se contorce na cadeira.
+
+Impacto: Essa agitação é descrita pelos pais como exaustiva, pois a criança parece não possuir um "botão de desligar",
+mantendo o mesmo nível de energia do despertar ao momento de dormir.
+
+2. Domínio da Gestão Executiva (Atenção e Memória)
+Filtro de Estímulos: O paciente falha em priorizar informações. Em uma sala com outras pessoas, o barulho de um carro lá fora
+tem o mesmo peso que a voz da mãe dando uma instrução direta.
+
+Memória de Curto Prazo: É comum o paciente esquecer o que ia fazer no meio do caminho.
+
+Finalização: Há uma forte resistência a tarefas longas. Ele tende a "chutar" respostas ou fazer o trabalho de qualquer jeito.
+
+3. Domínio da Impulsividade e Socialização
+Interação: Interrompe conversas alheias constantemente por não conseguir segurar o pensamento até a sua vez de falar.
+
+4. Observações de Processamento Auxiliar
+Sono: Histórico de resistência para dormir e sono muito agitado (se mexe muito na cama).
+
+Organização: Perda constante de pertences e dificuldade em manter seu espaço mínimo (quarto ou mochila) organizado sem auxílio direto.
+
+Sinais Negativos Importantes:
+Não apresenta rigidez excessiva com rotinas (é flexível a mudanças).
+Não apresenta interesses restritos ou fixos (seus interesses mudam com frequência).
+Contato visual e compreensão de ironias/metáforas preservados.
+""".strip()
+
+
 NARRATIVE_ENORMOUS_1 = """
 Consulta clínica (pediatria do desenvolvimento / neuropsiquiatria infantil).
 Data: 2026-02-10. Participantes: mãe, pai e professora (relato escrito).

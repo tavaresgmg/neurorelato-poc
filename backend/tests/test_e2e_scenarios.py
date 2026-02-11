@@ -9,6 +9,7 @@ from app.nlp.anonymize import anonymize_text
 from tests.fixtures.narratives import (
     NARRATIVE_CASE_NEUROBEHAVIORAL_RICH_1,
     NARRATIVE_CASE_OVERLAP_TEA_TDAH_1,
+    NARRATIVE_CASE_PROFILE_MEDIUM_1,
     NARRATIVE_ENORMOUS_1,
     NARRATIVE_LONG_1,
     NARRATIVE_LONG_2,
@@ -210,6 +211,40 @@ def test_e2e_overlap_tea_tdah_narrative_has_core_findings() -> None:
         assert "dificuldade de foco" in symptoms
         assert "agitação motora" in symptoms
         assert "impulsividade" in symptoms
+
+
+def test_e2e_profile_medium_narrative_has_attention_motor_and_no_social_false_positive() -> None:
+    """
+    Cenário "médio" com headings: deve extrair DOM_03 e evitar falsos positivos em DOM_01.
+    Também valida que "sono muito agitado" não vira "agitação motora" por embeddings/heurística.
+    """
+    app = create_app(database_url="sqlite+pysqlite:///:memory:", init_db=True)
+    with TestClient(app) as client:
+        r = client.post(
+            "/api/v1/normalize",
+            json={
+                "text": NARRATIVE_CASE_PROFILE_MEDIUM_1,
+                "options": {"enable_embeddings": True},
+            },
+        )
+        assert r.status_code == 200
+        data = r.json()
+        symptoms = _symptoms_from_response(data)
+
+        assert "agitação motora" in symptoms
+        assert "dificuldade de foco" in symptoms
+        assert "impulsividade" in symptoms
+        assert "perda de objetos" in symptoms
+
+        # Guardrail: não confundir desregulação/frustração com reciprocidade emocional.
+        assert "falta de reciprocidade emocional" not in symptoms
+        assert "dificuldade em iniciar interação" not in symptoms
+
+        # Fidelidade: agitação motora não deve ser inferida a partir de "sono muito agitado".
+        all_findings = [f for d in data["domains"] for f in d["findings"]]
+        ag = [f for f in all_findings if f["symptom"] == "agitação motora"][0]
+        for ev in ag.get("evidence", []):
+            assert "sono" not in (ev.get("quote") or "").lower()
 
 
 def test_e2e_runs_endpoint_invalid_id_returns_400_standard_error_schema() -> None:

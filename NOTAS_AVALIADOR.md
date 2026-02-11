@@ -16,7 +16,7 @@ Desejavel:
 
 - Gap analysis: retorna dominios pouco explorados com perguntas sugeridas.
 - Resumo tecnico: template (sem LLM).
-- Embeddings: similaridade semantica local (opcional, mas habilitado por padrao na UI) com fallback.
+- Embeddings: similaridade semantica local (opcional por request, mas com policy server-side para habilitar por default) com fallback.
 - Persistencia: Postgres + historico (`GET /api/v1/history`, `GET /api/v1/runs/{id}`).
 
 Plus:
@@ -24,12 +24,13 @@ Plus:
 - Anonimizacao: mascara email/telefone/CPF, datas comuns (dd/mm/aaaa) e heuristica de nome (PoC).
 - XAI: evidencias com trechos + offsets; UI mostra contexto e texto processado quando anonimizado.
 - Audio: ditado via Web Speech API (dependente do navegador).
+- Observabilidade (local): Prometheus + Grafana com métricas HTTP e métricas do pipeline (`/metrics`, `pn_*`).
 
 ## Demo (Heroku)
 
 - App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
 - Swagger: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`
-  - Obs: usa Heroku Postgres `essential-0` (max $5/mes).
+  - DB: Heroku Postgres `essential-0` (max $5/mes).
 
 ## Trade-offs Principais
 
@@ -44,6 +45,11 @@ Plus:
   embeddings aumenta recall para variacoes/para frases nao previstas.
 - Consequencia: embeddings pode aumentar falso positivo. Por isso existe filtro conservador
   (threshold + margem vs segundo melhor candidato).
+- Guardrails adicionais (para reduzir falso positivo em textos longos):
+  - ignora headers/sentenças muito curtas como evidencia (ex: "Interacao:", "Sono:").
+  - nao considera frases de "meta-texto" (objetivo/descartar/confirmar) como evidencia.
+  - evita inferir "agitacao motora" a partir de frases sobre sono (ex: "sono muito agitado").
+  - por sintoma, so roda embeddings se houver "ancoras" lexicais no texto (evita similaridade generica).
 - Robustez: se embeddings falharem em runtime (download/modelo), a API emite warning e cai para heuristicas (sem 500).
 
 3. Persistir apenas texto redigido (quando anonimizado)
@@ -65,6 +71,19 @@ Plus:
   Alternativa mais "padrao de mercado" para pesquisa/prototipos: `sentence-transformers` (mais pesado).
 - Heuristica: normalizacao (lowercase/diacriticos) + patterns e regras. Para produto real,
   eu consideraria `spaCy` (matcher/pipeline) e/ou um modelo com reranking (cross-encoder) para reduzir falso positivo.
+
+## Por Que Nao Treinar Um Modelo (nesta PoC)
+
+- Dataset: o desafio fornece uma ontologia pequena, mas nao fornece dados rotulados. Sem um conjunto rotulado,
+  "treinar" tende a piorar (overfitting) e nao da para medir ganho com rigor.
+- Privacidade: datasets clinicos publicos frequentemente exigem termo/credenciamento (DUA) e nao sao apropriados
+  para serem incluidos no repositorio do desafio.
+- Tempo/risco: no prazo da PoC, o melhor custo/beneficio e manter o pipeline deterministico e explicavel.
+
+Em produto real:
+
+- primeiro: construir dataset rotulado (mesmo que pequeno, mas representativo) + baseline por sintoma.
+- depois: considerar um classificador leve sobre embeddings (ex: logistic regression) e/ou reranking (cross-encoder).
 
 ## O Que Eu Faria Diferente Em Produto Real
 
@@ -100,4 +119,4 @@ Plus:
 - Stress test: narrativa grande com PII ficticio + repeticoes/nuances (anonimizacao + offsets) coberta por teste E2E.
 - LGPD: suite inclui testes que garantem:
   - erros de validacao nao ecoam `input`
-  - texto bruto nao e persistido quando anonimização esta desligada
+  - o texto bruto nao e persistido (apenas texto redigido quando houve anonimização)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
+from time import perf_counter
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -23,6 +24,17 @@ from app.api.v1.schemas import (
     Finding as FindingSchema,
 )
 from app.core.config import settings
+from app.core.metrics import (
+    PN_ANONYMIZE_SECONDS,
+    PN_EMBEDDINGS_ENABLED_TOTAL,
+    PN_EMBEDDINGS_RUNTIME_ERROR_TOTAL,
+    PN_EXTRACT_SECONDS,
+    PN_FINDINGS_TOTAL,
+    PN_GAPS_SECONDS,
+    PN_GAPS_TOTAL,
+    PN_NORMALIZE_SECONDS,
+    PN_SUMMARY_SECONDS,
+)
 from app.db.deps import get_db
 from app.db.models import ConsultationRun, Finding, GapItem
 from app.nlp.anonymize import anonymize_text
@@ -49,6 +61,7 @@ def ontology() -> dict[str, Any]:
 @router.post("/normalize", response_model=NormalizeResponse, response_model_exclude_none=True)
 def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> NormalizeResponse:  # noqa: B008
     domains = load_domains(MOCK_ONTOLOGY)
+    t0_total = perf_counter()
 
     warnings: list[WarningItem] = []
     if len(payload.text.strip()) < 30:
@@ -61,11 +74,13 @@ def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> Norma
     processed_text = payload.text
     was_anonymized = False
     # Segurança/LGPD: sempre rodamos a anonimização antes de processar e persistir.
-    processed_text, was_anonymized, _hits = anonymize_text(payload.text)
+    with PN_ANONYMIZE_SECONDS.time():
+        processed_text, was_anonymized, _hits = anonymize_text(payload.text)
 
     embeddings_provider: SafeEmbeddingProvider | None = None
     enable_embeddings = payload.options.enable_embeddings or settings.enable_embeddings_by_default
     if enable_embeddings:
+        PN_EMBEDDINGS_ENABLED_TOTAL.inc()
         try:
             embeddings_provider = SafeEmbeddingProvider(get_default_provider())
         except Exception:
@@ -76,8 +91,10 @@ def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> Norma
                 )
             )
 
-    hits = extract_findings(processed_text, domains, embeddings_provider=embeddings_provider)
+    with PN_EXTRACT_SECONDS.time():
+        hits = extract_findings(processed_text, domains, embeddings_provider=embeddings_provider)
     if embeddings_provider is not None and embeddings_provider.diagnostics.had_error:
+        PN_EMBEDDINGS_RUNTIME_ERROR_TOTAL.inc()
         warnings.append(
             WarningItem(
                 code="EMBEDDINGS_RUNTIME_ERROR",
@@ -87,8 +104,19 @@ def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> Norma
                 ),
             )
         )
-    gaps = compute_gaps(domains, hits)
-    summary_text = generate_template_summary(domains, hits, gaps)
+    with PN_GAPS_SECONDS.time():
+        gaps = compute_gaps(domains, hits)
+    with PN_SUMMARY_SECONDS.time():
+        summary_text = generate_template_summary(domains, hits, gaps)
+
+    # Métricas agregadas (sem PII).
+    counts_by_domain: dict[str, int] = {}
+    for h in hits:
+        counts_by_domain[h.domain_id] = counts_by_domain.get(h.domain_id, 0) + 1
+    for domain_id, n in counts_by_domain.items():
+        PN_FINDINGS_TOTAL.labels(domain_id=domain_id).inc(n)
+    for g in gaps:
+        PN_GAPS_TOTAL.labels(domain_id=g.domain_id, gap_level=g.gap_level).inc()
 
     run = ConsultationRun(
         id=uuid.uuid4(),
@@ -135,6 +163,8 @@ def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> Norma
     except Exception:
         db.rollback()
         raise
+    finally:
+        PN_NORMALIZE_SECONDS.observe(perf_counter() - t0_total)
 
     hits_by_domain: dict[str, list[FindingSchema]] = {}
     for h in hits:

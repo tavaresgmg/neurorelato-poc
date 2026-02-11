@@ -17,10 +17,13 @@ jobs:
           POSTGRES_USER: plataformaneuro
           POSTGRES_PASSWORD: plataformaneuro
           POSTGRES_DB: plataformaneuro
+          # Para o healthcheck não precisar de flags com espaço (Actions pode quebrar quoting).
+          PGUSER: plataformaneuro
+          PGDATABASE: plataformaneuro
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U plataformaneuro -d plataformaneuro"
+          --health-cmd pg_isready
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20

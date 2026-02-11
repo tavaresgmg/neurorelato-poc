@@ -13,6 +13,8 @@ dependencies = [
   "alembic>=1.18.3",
   "psycopg[binary]>=3.3.2",
   "fastembed>=0.7.4",
+  "prometheus-client>=0.24.1",
+  "prometheus-fastapi-instrumentator>=7.1.0",
 ]
 
 [dependency-groups]

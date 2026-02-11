@@ -30,6 +30,8 @@ _ASSESSMENT_RE = re.compile(
     r")\b"
 )
 
+_SLEEP_RE = re.compile(r"\b(sono|cama|repouso|adormec|despertar)\b")
+
 
 SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
     "contato visual reduzido": [
@@ -106,6 +108,7 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("quebras na previsibilidade", 0.84),
         Pattern("alteracao de sua rotina", 0.84),
         Pattern("mudancas de planos", 0.8),
+        Pattern("rigidez excessiva com rotinas", 0.84),
     ],
     "interesses hiperfocados": [
         Pattern("interesses hiperfocados", 0.92),
@@ -152,6 +155,14 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("distractibilidade exogena", 0.84),
         Pattern("sequestrado", 0.78),
         Pattern("nao finaliza nenhuma", 0.8),
+        Pattern("falha em priorizar", 0.82),
+        Pattern("mesmo peso", 0.78),
+        Pattern("esquecer o que ia fazer", 0.84),
+        Pattern("no meio do caminho", 0.8),
+        Pattern("esquecendo completamente o objetivo", 0.84),
+        Pattern("nao finaliza", 0.8),
+        Pattern("chutar respostas", 0.78),
+        Pattern("de qualquer jeito", 0.76),
     ],
     "agitação motora": [
         Pattern("agitacao motora", 0.92),
@@ -166,6 +177,11 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("nivel de atividade motora", 0.82),
         Pattern("inquietude", 0.78),
         Pattern("correr sem direcao", 0.82),
+        Pattern("busca por movimento", 0.84),
+        Pattern("balanca as pernas", 0.84),
+        Pattern("se contorce", 0.82),
+        Pattern("botao de desligar", 0.78),
+        Pattern("pressa motora", 0.82),
     ],
     "impulsividade": [
         Pattern("impulsividade", 0.92),
@@ -184,6 +200,10 @@ SYMPTOM_PATTERNS: dict[str, list[Pattern]] = {
         Pattern("perda de objetos", 0.92),
         Pattern("perde objetos", 0.86),
         Pattern("vive perdendo", 0.78),
+        Pattern("perda de pertences", 0.86),
+        Pattern("perda constante de pertences", 0.9),
+        Pattern("perda constante", 0.78),
+        Pattern("perde pertences", 0.84),
     ],
 }
 
@@ -247,6 +267,12 @@ def _is_assessment_goal_sentence(nt: NormalizedText, start_norm: int) -> bool:
     s0, s1 = _sentence_bounds(nt.norm, start_norm)
     snippet = nt.norm[s0:s1]
     return bool(_ASSESSMENT_RE.search(snippet))
+
+
+def _is_sleep_context_sentence(nt: NormalizedText, start_norm: int) -> bool:
+    s0, s1 = _sentence_bounds(nt.norm, start_norm)
+    snippet = nt.norm[s0:s1]
+    return bool(_SLEEP_RE.search(snippet))
 
 
 _neg_re = re.compile(r"\b(" + "|".join(map(re.escape, NEGATORS)) + r")\b")
@@ -349,6 +375,14 @@ def extract_findings(
                 if _is_assessment_goal_sentence(nt, start_norm):
                     # Evita falso positivo quando o sintoma aparece como objetivo/hipótese.
                     continue
+                if symptom == "agitação motora" and p.phrase in {
+                    "muito agitado",
+                    "inquieto",
+                    "inquietude",
+                }:
+                    # Evita falso positivo em frases como "sono muito agitado".
+                    if _is_sleep_context_sentence(nt, start_norm):
+                        continue
                 ev = span_to_evidence(nt, start_norm, end_norm)
                 best_score = max(best_score, p.score)
                 neg = is_negated(nt, start_norm, end_norm, pattern=p)
@@ -405,11 +439,22 @@ def compute_gaps(domains: list[Domain], findings: list[FindingHit]) -> list[GapR
 
     gaps: list[GapResult] = []
     for d in domains:
-        domain_findings = [f for f in findings_by_domain.get(d.id, []) if not f.negated]
-        if len(domain_findings) == 0:
+        domain_all = findings_by_domain.get(d.id, [])
+        domain_pos = [f for f in domain_all if not f.negated]
+        domain_neg = [f for f in domain_all if f.negated]
+
+        if len(domain_pos) == 0 and len(domain_neg) == 0:
             gap_level = "high"
             rationale = "Nenhuma evidência encontrada para sintomas do domínio."
-        elif len(domain_findings) == 1:
+        elif len(domain_pos) == 0 and len(domain_neg) > 0:
+            # Se o domínio foi mencionado apenas em negativas relevantes, não é "zero explorado";
+            # ainda pode valer explorar outros sintomas do domínio.
+            gap_level = "medium"
+            rationale = (
+                "Domínio mencionado apenas em negativas relevantes; "
+                "pode ser útil explorar outros sintomas."
+            )
+        elif len(domain_pos) == 1:
             gap_level = "medium"
             rationale = "Pouca evidência encontrada; pode ser necessário explorar mais o domínio."
         else:

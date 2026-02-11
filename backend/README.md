@@ -60,6 +60,12 @@ uv run python tools/benchmark.py --format json --runs 20 --out /tmp/plataformane
   - `PN_EMBEDDINGS_WARMUP=true|false`
   - `PN_EMBEDDINGS_MODEL` (default: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`)
 
+## Observabilidade
+
+- Endpoint Prometheus: `GET /metrics`
+- Inclui métricas de pipeline (`pn_*`) e métricas HTTP (via instrumentação do FastAPI).
+- As labels não incluem PII.
+
 ## Robustez (embeddings)
 
 - Se embeddings forem habilitados e falharem em runtime (download/modelo/onnxruntime), a API retorna `200`

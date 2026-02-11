@@ -18,6 +18,7 @@ from app.api.v1.routes import router as v1_router
 from app.core.config import settings
 from app.core.errors import ApiError
 from app.core.logging import install_pii_redaction_filters
+from app.core.metrics import setup_prometheus_metrics
 from app.core.security import BasicAuthMiddleware
 from app.db.session import make_engine, make_sessionmaker
 
@@ -121,6 +122,7 @@ def create_app(*, database_url: str | None = None, init_db: bool = False) -> Fas
     app.include_router(v1_router)
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
+    setup_prometheus_metrics(app)
 
     if init_db:
         # Used only in tests/dev helpers. Production uses Alembic migrations.

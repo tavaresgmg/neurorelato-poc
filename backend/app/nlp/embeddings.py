@@ -42,6 +42,7 @@ _ASSESSMENT_RE = re.compile(
     r"tdah|tea|autismo|transtorno\s+do\s+espectro\s+autista"
     r")\b"
 )
+_SLEEP_RE = re.compile(r"\b(sono|cama|repouso|adormec|despertar)\b")
 
 
 def split_sentences(text: str) -> list[SentenceSpan]:
@@ -225,6 +226,14 @@ def extract_findings_embeddings(
     if not sentences:
         return []
 
+    def _is_too_short_for_embeddings(sentence: str) -> bool:
+        # Avoid treating section headers like "Interação:" as evidence.
+        s = sentence.strip()
+        # Heuristic: headers tend to be 1-2 words ("Interação", "Sono").
+        if len(s.split()) <= 2:
+            return True
+        return False
+
     def _norm(s: str) -> str:
         return _normalize_for_negation(s)
 
@@ -232,14 +241,37 @@ def extract_findings_embeddings(
     # que tenham alguma pista lexical relacionada.
     anchors: dict[str, tuple[str, ...]] = {
         "contato visual reduzido": ("olhar", "olhos", "contato visual"),
-        "dificuldade em iniciar interação": ("iniciar", "interacao", "interagir"),
+        # Evitar "interacao" como âncora: genérico e dá falso positivo em headers.
+        "dificuldade em iniciar interação": (
+            "iniciar",
+            "nao inicia",
+            "presenca paralela",
+            "cooperacao",
+        ),
         "isolamento social": ("isol", "sozinh", "solitari", "retira"),
-        "falta de reciprocidade emocional": ("reciproc", "conexao emocional", "emocional"),
+        # Evite usar "emocional" como âncora (é genérico e dá falso positivo).
+        "falta de reciprocidade emocional": (
+            "reciproc",
+            "pragmat",
+            "trilho",
+            "deixas",
+            "interlocutor",
+        ),
         "estereotipias motoras": ("repetit", "estereotip", "balanc", "manipula objetos"),
         "insistência nas mesmas rotinas": ("rotina", "mudanc", "ordem", "regras", "mesmice"),
         "interesses hiperfocados": ("hiperfoc", "tunel", "horas", "pesquis", "assunto especifico"),
         "sensibilidade sensorial": ("sensor", "textur", "ruido", "barulho", "etiquet", "costur"),
-        "dificuldade de foco": ("foco", "concentr", "distrai", "distract", "abandona"),
+        "dificuldade de foco": (
+            "foco",
+            "concentr",
+            "atencao",
+            "manter a atencao",
+            "mantem a atencao",
+            "distrai",
+            "distract",
+            "dispers",
+            "abandona",
+        ),
         "agitação motora": ("agit", "motor", "pular", "hiperativ", "nao para"),
         "impulsividade": ("impuls", "interromp", "atravessa", "sem olhar", "proibid"),
         "perda de objetos": ("perde", "objet"),
@@ -275,8 +307,10 @@ def extract_findings_embeddings(
         a = anchors.get(symptom)
         if a:
             candidates = [i for i, s in enumerate(norm_sentences) if any(x in s for x in a)]
+            # Se não houver nenhuma âncora no texto, não tenta embeddings para esse sintoma:
+            # evita falso positivo por "similaridade genérica" em textos longos.
             if not candidates:
-                candidates = list(range(len(sentences)))
+                continue
 
         best_i = -1
         best = 0.0
@@ -302,7 +336,12 @@ def extract_findings_embeddings(
             continue
 
         ss = sentences[best_i]
+        if _is_too_short_for_embeddings(ss.text):
+            continue
         if _sentence_is_assessment_goal(ss.text):
+            continue
+        # Evitar falso positivo: "sono muito agitado" não deve virar "agitação motora".
+        if symptom == "agitação motora" and _SLEEP_RE.search(_norm(ss.text)):
             continue
         hits.append(
             FindingHit(
