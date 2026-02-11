@@ -8,6 +8,7 @@ from app.main import create_app
 from app.nlp.anonymize import anonymize_text
 from tests.fixtures.narratives import (
     NARRATIVE_CASE_NEUROBEHAVIORAL_RICH_1,
+    NARRATIVE_CASE_OVERLAP_TEA_TDAH_1,
     NARRATIVE_ENORMOUS_1,
     NARRATIVE_LONG_1,
     NARRATIVE_LONG_2,
@@ -175,6 +176,40 @@ def test_e2e_clinical_rich_narrative_has_high_recall_and_no_meta_text_false_posi
         # Gap analysis only returns "high"/"medium" gaps. If DOM_01 is absent, it is "low" (ok).
         gaps_by_domain = {g["domain_id"]: g for g in data["gaps"]}
         assert gaps_by_domain.get("DOM_01", {}).get("gap_level") != "high"
+
+
+def test_e2e_overlap_tea_tdah_narrative_has_core_findings() -> None:
+    """
+    Texto técnico com rótulos (TDAH/TEA) deve ser interpretado por evidências comportamentais,
+    sem depender do diagnóstico em si.
+    """
+    app = create_app(database_url="sqlite+pysqlite:///:memory:", init_db=True)
+    with TestClient(app) as client:
+        r = client.post(
+            "/api/v1/normalize",
+            json={
+                "text": NARRATIVE_CASE_OVERLAP_TEA_TDAH_1,
+                "options": {"enable_embeddings": False},
+            },
+        )
+        assert r.status_code == 200
+        data = r.json()
+        symptoms = _symptoms_from_response(data)
+
+        # DOM_01
+        assert "contato visual reduzido" in symptoms
+        assert "falta de reciprocidade emocional" in symptoms
+
+        # DOM_02
+        assert "insistência nas mesmas rotinas" in symptoms
+        assert "interesses hiperfocados" in symptoms
+        assert "sensibilidade sensorial" in symptoms
+        assert "estereotipias motoras" in symptoms
+
+        # DOM_03
+        assert "dificuldade de foco" in symptoms
+        assert "agitação motora" in symptoms
+        assert "impulsividade" in symptoms
 
 
 def test_e2e_runs_endpoint_invalid_id_returns_400_standard_error_schema() -> None:

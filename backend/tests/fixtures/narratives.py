@@ -126,6 +126,30 @@ social e flexibilidade cognitiva.
 """.strip()
 
 
+NARRATIVE_CASE_OVERLAP_TEA_TDAH_1 = """
+Este é um relato de alta complexidade técnica, desenhado para um prontuário de especialista. O texto foca na
+intersecção fenotípica: onde a agitação do TDAH se funde com a rigidez do TEA, criando um quadro de difícil distinção.
+
+Perfil de Engajamento Social e Comunicação Pragmática
+O paciente apresenta comunicação verbal fluida, porém com falha na pragmática social (discurso em trilho, dificuldade
+em monitorar o interesse do interlocutor e perceber deixas sociais).
+O contato visual é intermitente e descrito como olhar periférico sob demanda cognitiva. Em grupo, há presença paralela
+e imposição de regras rígidas.
+
+Dinâmica de Atenção e Processos Executivos
+Hiperfoco seletivo em tarefas de alto interesse. Distractibilidade exógena: ruídos e movimentos periféricos "sequestram"
+a atenção; começa múltiplas tarefas e não finaliza nenhuma.
+
+Autorregulação e Padrões Psicomotores
+Nível de atividade motora exacerbado, inquietude sem alvo. Movimentos repetitivos como balançar do tronco (rocking) e
+saltos repetitivos. Impulsividade com baixa tolerância à espera e dificuldade em postergar gratificações.
+
+Processamento Sensorial e Inflexibilidade Cognitiva
+Aversão a ruídos metálicos e texturas alimentares; sensibilidade tátil. Quebras na previsibilidade e mudanças de planos
+desencadeiam crises de choro e rigidez.
+""".strip()
+
+
 NARRATIVE_ENORMOUS_1 = """
 Consulta clínica (pediatria do desenvolvimento / neuropsiquiatria infantil).
 Data: 2026-02-10. Participantes: mãe, pai e professora (relato escrito).

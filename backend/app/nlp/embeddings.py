@@ -37,7 +37,10 @@ _NEGATORS = (
 _NEG_RE = re.compile(r"\b(" + "|".join(map(re.escape, _NEGATORS)) + r")\b")
 _CONTRAST_RE = re.compile(r"\b(mas|porem|entretanto|contudo|todavia)\b")
 _ASSESSMENT_RE = re.compile(
-    r"\b(objetivo\s+da\s+consulta|necessario\s+descartar|descartar|confirmar|investigacao)\b"
+    r"\b("
+    r"objetivo\s+da\s+consulta|necessario\s+descartar|descartar|confirmar|investigacao|"
+    r"tdah|tea|autismo|transtorno\s+do\s+espectro\s+autista"
+    r")\b"
 )
 
 
