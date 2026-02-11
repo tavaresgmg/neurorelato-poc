@@ -46,6 +46,13 @@ PoC de normalizacao semantica para transformar narrativa clinica livre em dado e
 - Persistencia orientada a privacidade: armazenamento de `text_redacted` e nao do texto bruto, reduzindo risco LGPD.
 - Observabilidade com Prometheus/Grafana para monitorar disponibilidade, latencia e saude operacional.
 
+### Stack escolhida e por quê
+
+- `FastAPI` no backend: produtividade alta, tipagem clara com Pydantic e integração simples com métricas.
+- `React + Vite + Mantine` no frontend: interface responsiva rápida para PoC, com componentização e boa DX.
+- `Postgres + SQLAlchemy` na persistência: modelo relacional consistente para histórico clínico e auditoria.
+- `Docker Compose` (local) e `Heroku` (demo): setup previsível para avaliação e operação objetiva de ambiente.
+
 ## Bibliotecas de NLP/IA e por quê
 
 - `fastembed` (ONNX local em CPU): similaridade semantica sem dependencia de servico externo.
@@ -112,7 +119,7 @@ npm run test:coverage
 Cobertura:
 
 - Backend: cobertura atual 94% (ultima validacao local em 2026-02-11), com gate no CI de no minimo 90% (`--cov-fail-under=90`).
-- Frontend: cobertura atual 91.26% statements (ultima validacao local em 2026-02-11).
+- Frontend: cobertura atual 91.63% statements (ultima validacao local em 2026-02-11).
 
 Benchmark offline (opcional):
 
@@ -150,13 +157,14 @@ Remoto:
 - Dashboard: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/d/neurorelato-observability/neurorelato-observabilidade-poc?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s`
 - Alertas (Prometheus API): `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/api/v1/alerts` (inclui `NeurorelatoBackendDown`)
 - Troubleshooting rapido: se o Grafana mostrar "No data", valide os targets do Prometheus e as vars `PN_METRICS_BASIC_AUTH_*` no app `neurorelatopoc-prometheus`.
-- Deploy padronizado da observabilidade: `./scripts/deploy-observability.sh [prometheus|grafana|all]`
-- Smoke check pos-release: `./scripts/observability-smoke.sh`
+- Fonte unica de observabilidade + sync automatico: `./observability/scripts/observability-sync.sh --check`
+- Deploy padronizado da observabilidade: `./observability/scripts/deploy-observability.sh [prometheus|grafana|all]`
+- Smoke check pos-release: `./observability/scripts/observability-smoke.sh`
 - O smoke check aplica retry para reduzir falso negativo em janela curta de scrape/restart.
 
 ## Diferenciais Técnicos (objetivos)
 
-- Cobertura atual: backend 94% e frontend 91.26% (ultima validacao local em 2026-02-11).
+- Cobertura atual: backend 94% e frontend 91.63% (ultima validacao local em 2026-02-11).
 - Degradacao graciosa: falha de embeddings nao gera 500; fluxo segue com heuristicas.
 - XAI no output: achados com trechos originais e offsets para rastreabilidade.
 - Observabilidade ativa: alerta `NeurorelatoBackendDown` e smoke check pos-release automatizado.

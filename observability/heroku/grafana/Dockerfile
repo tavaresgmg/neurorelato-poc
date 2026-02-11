@@ -1,7 +1,8 @@
 FROM grafana/grafana:11.5.2
 
-COPY provisioning /etc/grafana/provisioning
-COPY dashboards /var/lib/grafana/dashboards
+COPY observability/heroku/grafana/provisioning/datasources/datasource.yml /etc/grafana/provisioning/datasources/datasource.yml
+COPY observability/base/grafana/provisioning/dashboards/dashboards.yml /etc/grafana/provisioning/dashboards/dashboards.yml
+COPY observability/base/grafana/dashboards /var/lib/grafana/dashboards
 ENV GF_PLUGINS_PREINSTALL_DISABLED=true \
     GF_ANALYTICS_CHECK_FOR_UPDATES=false \
     GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=false
@@ -10,7 +11,7 @@ ENV GF_PLUGINS_PREINSTALL_DISABLED=true \
 # em runtime (Grafana não garante interpolação de env vars em provisioning em todas versões).
 USER root
 RUN apk add --no-cache gettext
-COPY entrypoint.sh /entrypoint.sh
+COPY observability/heroku/grafana/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 USER grafana
 

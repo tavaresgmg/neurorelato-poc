@@ -4,6 +4,7 @@ set -eu
 APP_NAME="${APP_NAME:-neurorelatopoc}"
 PROM_APP="${PROM_APP:-neurorelatopoc-prometheus}"
 GRAFANA_APP="${GRAFANA_APP:-neurorelatopoc-grafana}"
+PROM_BACKEND_JOB_NAME="${PROM_BACKEND_JOB_NAME:-neurorelato-backend}"
 MAX_ATTEMPTS="${MAX_ATTEMPTS:-6}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-5}"
 
@@ -51,27 +52,27 @@ fetch_target_health() {
     print_json_snippet "$raw"
     return 1
   fi
-  value="$(printf '%s' "$raw" | jq -r '.data.activeTargets[] | select(.labels.job=="neurorelato-backend") | .health' | head -n1)"
+  value="$(printf '%s' "$raw" | jq -r ".data.activeTargets[] | select(.labels.job==\"${PROM_BACKEND_JOB_NAME}\") | .health" | head -n1)"
   if [ -z "$value" ]; then
-    echo "WARN: target neurorelato-backend ainda nao encontrado em activeTargets." >&2
+    echo "WARN: target ${PROM_BACKEND_JOB_NAME} ainda nao encontrado em activeTargets." >&2
     return 1
   fi
   if [ "$value" != "up" ]; then
-    echo "WARN: target neurorelato-backend ainda nao esta up (valor: ${value})." >&2
+    echo "WARN: target ${PROM_BACKEND_JOB_NAME} ainda nao esta up (valor: ${value})." >&2
     return 1
   fi
   TARGET_HEALTH="$value"
 }
 
 fetch_up_value() {
-  raw="$(curl -sS "${PROM_BASE_URL}api/v1/query?query=up%7Bjob%3D%22neurorelato-backend%22%7D")" || return 1
+  raw="$(curl -sS "${PROM_BASE_URL}api/v1/query?query=up%7Bjob%3D%22${PROM_BACKEND_JOB_NAME}%22%7D")" || return 1
   if ! printf '%s' "$raw" | jq -e '.data.result | type == "array"' >/dev/null 2>&1; then
     print_json_snippet "$raw"
     return 1
   fi
   value="$(printf '%s' "$raw" | jq -r '.data.result[0].value[1] // empty')"
   if [ -z "$value" ]; then
-    echo "WARN: query up ainda sem valor para neurorelato-backend." >&2
+    echo "WARN: query up ainda sem valor para ${PROM_BACKEND_JOB_NAME}." >&2
     return 1
   fi
   if [ "$value" != "1" ]; then
@@ -134,8 +135,8 @@ fi
 metrics_no_auth="$(curl -s -o /dev/null -w '%{http_code}' "${APP_BASE_URL}metrics")"
 metrics_with_auth="$(curl -u "$APP_USER:$APP_PASS" -s -o /dev/null -w '%{http_code}' "${APP_BASE_URL}metrics")"
 
-retry_cmd "target neurorelato-backend em /api/v1/targets" fetch_target_health
-retry_cmd "query up{job=neurorelato-backend}" fetch_up_value
+retry_cmd "target ${PROM_BACKEND_JOB_NAME} em /api/v1/targets" fetch_target_health
+retry_cmd "query up{job=${PROM_BACKEND_JOB_NAME}}" fetch_up_value
 retry_cmd "health do datasource Prometheus no Grafana" fetch_grafana_ds_status
 retry_cmd "consulta de alertas Prometheus" fetch_alert_state
 
@@ -150,12 +151,12 @@ retry_cmd "consulta de alertas Prometheus" fetch_alert_state
 }
 
 [ "$TARGET_HEALTH" = "up" ] || {
-  echo "FALHA: target neurorelato-backend no Prometheus nao esta up (valor: ${TARGET_HEALTH:-vazio})" >&2
+  echo "FALHA: target ${PROM_BACKEND_JOB_NAME} no Prometheus nao esta up (valor: ${TARGET_HEALTH:-vazio})" >&2
   exit 1
 }
 
 [ "$UP_VALUE" = "1" ] || {
-  echo "FALHA: query up{job=\"neurorelato-backend\"} deveria ser 1, retornou ${UP_VALUE:-vazio}" >&2
+  echo "FALHA: query up{job=\"${PROM_BACKEND_JOB_NAME}\"} deveria ser 1, retornou ${UP_VALUE:-vazio}" >&2
   exit 1
 }
 

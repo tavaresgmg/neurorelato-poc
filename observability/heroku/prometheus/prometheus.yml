@@ -17,5 +17,4 @@ scrape_configs:
       username: ${PN_METRICS_BASIC_AUTH_USER}
       password: ${PN_METRICS_BASIC_AUTH_PASSWORD}
     static_configs:
-      # Host do app principal (sem https://). Ex: neurorelatopoc-xxxx.herokuapp.com
       - targets: ["${PN_METRICS_TARGET}"]

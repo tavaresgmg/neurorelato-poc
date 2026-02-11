@@ -1,0 +1,5 @@
+  - job_name: ${PN_BACKEND_JOB_NAME}
+    scheme: ${PN_BACKEND_SCHEME}
+    metrics_path: ${PN_BACKEND_METRICS_PATH}
+${PN_BACKEND_BASIC_AUTH_BLOCK}    static_configs:
+      - targets: ["${PN_BACKEND_TARGET}"]

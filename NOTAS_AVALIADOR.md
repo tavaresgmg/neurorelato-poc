@@ -55,5 +55,5 @@
 ## Evidências de validação (verified_by)
 
 - Validação técnica executada com os comandos oficiais documentados no `README.md` (backend e frontend).
-- Smoke de observabilidade validado com `./scripts/observability-smoke.sh`.
+- Smoke de observabilidade validado com `./observability/scripts/observability-smoke.sh`.
 - Baseline de cobertura mantido acima de 90% em backend e frontend.
