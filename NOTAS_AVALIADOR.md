@@ -25,6 +25,12 @@ Plus:
 - XAI: evidencias com trechos + offsets; UI mostra contexto e texto processado quando anonimizado.
 - Audio: ditado via Web Speech API (dependente do navegador).
 
+## Demo (Heroku)
+
+- App: `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/`
+- Swagger: `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/docs`
+  - Obs: usa Heroku Postgres `essential-0` (max $5/mes).
+
 ## Trade-offs Principais
 
 1. Sem LLM (por default)

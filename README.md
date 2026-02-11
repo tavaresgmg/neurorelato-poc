@@ -8,6 +8,12 @@ PoC para **normalizacao semantica**: transformar narrativa clinica livre em **da
 - README backend: `backend/README.md`
 - README frontend: `frontend/README.md`
 
+## Demo (Heroku)
+
+App: `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/`
+API health: `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/api/v1/health`
+Swagger (OpenAPI): `https://cryptic-bastion-29267-5dfa44aa7e7a.herokuapp.com/docs`
+
 ## Como rodar
 
 ### Dev (Docker)
