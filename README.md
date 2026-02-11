@@ -133,6 +133,7 @@ Remoto:
   - targets: `https://neurorelatopoc-prometheus-964f3fe83c44.herokuapp.com/api/v1/targets?state=active`
 - Grafana: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/` (credenciais no arquivo local `ACESSOS_PRIVADOS.txt`)
 - Dashboard: `https://neurorelatopoc-grafana-8bea103e0dbd.herokuapp.com/d/neurorelato-observability/neurorelato-observabilidade-poc?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s`
+- Troubleshooting rapido: se o Grafana mostrar "No data", valide os targets do Prometheus e as vars `PN_METRICS_BASIC_AUTH_*` no app `neurorelatopoc-prometheus`.
 
 ## Limitações Conhecidas
 

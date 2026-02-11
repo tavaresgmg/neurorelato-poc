@@ -10,9 +10,9 @@ scrape_configs:
   - job_name: neurorelato-backend
     scheme: https
     metrics_path: /metrics
+    basic_auth:
+      username: ${PN_METRICS_BASIC_AUTH_USER}
+      password: ${PN_METRICS_BASIC_AUTH_PASSWORD}
     static_configs:
       # Host do app principal (sem https://). Ex: neurorelatopoc-xxxx.herokuapp.com
       - targets: ["${PN_METRICS_TARGET}"]
-    # Se o /metrics estiver protegido por Basic Auth, o jeito mais simples para a PoC
-    # e gerar este arquivo dinamicamente (com/sem basic_auth) no entrypoint.
-    # Mantemos sem auth para evitar configuração "meio quebrada" quando vars estão vazias.
