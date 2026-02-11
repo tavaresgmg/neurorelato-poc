@@ -1,0 +1,58 @@
+### OS
+.DS_Store
+Thumbs.db
+
+### Editors/IDEs
+.vscode/
+.idea/
+
+### Local tooling
+.serena/
+
+### Env / secrets
+.env
+.env.*
+
+### Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.hypothesis/
+.tox/
+.nox/
+
+### Node / frontend
+node_modules/
+dist/
+.vite/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+### Local DB / data
+*.sqlite
+*.sqlite3
+*.db
+
+### Logs
+*.log
+
+### Confidential / entrega
+IPENEURO*.pdf
+
+# Docs locais (não subir no GitHub conforme combinado)
+docs/

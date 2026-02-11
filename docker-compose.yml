@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: plataformaneuro
+      POSTGRES_PASSWORD: plataformaneuro
+      POSTGRES_DB: plataformaneuro
+    ports:
+      - "${PN_DB_PORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    environment:
+      # Demo knobs (optional). If user/pass are unset/empty, Basic Auth is disabled.
+      PN_BASIC_AUTH_USER: ""
+      PN_BASIC_AUTH_PASSWORD: ""
+      PN_DATABASE_URL: postgresql+psycopg://plataformaneuro:plataformaneuro@db:5432/plataformaneuro
+      # Policies (server-side): useful for hosted demos (avoid trusting client toggles).
+      PN_FORCE_ANONYMIZATION: "${PN_FORCE_ANONYMIZATION:-true}"
+      PN_ENABLE_EMBEDDINGS_BY_DEFAULT: "${PN_ENABLE_EMBEDDINGS_BY_DEFAULT:-true}"
+      PN_EMBEDDINGS_WARMUP: "${PN_EMBEDDINGS_WARMUP:-false}"
+      PN_EMBEDDINGS_MODEL: "${PN_EMBEDDINGS_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}"
+    ports:
+      - "${PN_BACKEND_PORT:-8000}:8000"
+    depends_on:
+      - db
+    command:
+      [
+        "sh",
+        "-c",
+        "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+      ]
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
+    ports:
+      - "${PN_FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
+    command:
+      [
+        "sh",
+        "-lc",
+        "[ -x node_modules/.bin/vite ] || npm ci; npm run dev -- --host 0.0.0.0 --port 5173",
+      ]
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+volumes:
+  db_data:
+  frontend_node_modules:
