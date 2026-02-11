@@ -8,8 +8,6 @@ function baseProps() {
   return {
     text: 'texto',
     onChangeText: () => undefined,
-    enableAnon: true,
-    onChangeEnableAnon: () => undefined,
     enableEmbeddings: false,
     onChangeEnableEmbeddings: () => undefined,
     canProcess: true,
@@ -34,8 +32,6 @@ test('InputPanel: audio desabilita quando nao suportado e transcript permite ins
     <InputPanel
       text=""
       onChangeText={() => undefined}
-      enableAnon={true}
-      onChangeEnableAnon={() => undefined}
       enableEmbeddings={false}
       onChangeEnableEmbeddings={() => undefined}
       canProcess={false}
@@ -66,6 +62,15 @@ test('InputPanel: Ctrl/Cmd+Enter dispara processamento quando permitido', () => 
 
   fireEvent.keyDown(screen.getByPlaceholderText(/Cole aqui/i), { key: 'Enter', ctrlKey: true });
   expect(onProcess).toHaveBeenCalledTimes(1);
+});
+
+test('InputPanel: Ctrl/Cmd+Enter nao processa quando texto excede limite', () => {
+  const onProcess = vi.fn();
+  const props = baseProps();
+  renderWithProviders(<InputPanel {...props} text={'a'.repeat(15_001)} onProcess={onProcess} />);
+
+  fireEvent.keyDown(screen.getByPlaceholderText(/Cole aqui/i), { key: 'Enter', ctrlKey: true });
+  expect(onProcess).not.toHaveBeenCalled();
 });
 
 test('InputPanel: Limpar chama onClear apenas quando ha texto', () => {

@@ -1,3 +1,5 @@
+export type FindingMethod = 'heuristic' | 'embeddings';
+
 export type NormalizeOptions = {
   enable_embeddings: boolean;
 };
@@ -17,7 +19,7 @@ export type Finding = {
   symptom: string;
   score: number;
   negated: boolean;
-  method: string;
+  method: FindingMethod;
   evidence: Evidence[];
 };
 

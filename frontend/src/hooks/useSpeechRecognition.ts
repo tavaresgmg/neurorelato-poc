@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type BrowserSpeechRecognition = {
   lang: string;
@@ -92,6 +92,13 @@ export function useSpeechRecognition() {
       },
     []
   );
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+    };
+  }, []);
 
   return {
     supported,

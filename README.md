@@ -119,7 +119,7 @@ npm run test:coverage
 Cobertura:
 
 - Backend: cobertura atual 94% (ultima validacao local em 2026-02-11), com gate no CI de no minimo 90% (`--cov-fail-under=90`).
-- Frontend: cobertura atual 91.63% statements (ultima validacao local em 2026-02-11).
+- Frontend: cobertura atual 91.76% statements (ultima validacao local em 2026-02-11).
 
 Benchmark offline (opcional):
 
@@ -164,7 +164,7 @@ Remoto:
 
 ## Diferenciais Técnicos (objetivos)
 
-- Cobertura atual: backend 94% e frontend 91.63% (ultima validacao local em 2026-02-11).
+- Cobertura atual: backend 94% e frontend 91.76% (ultima validacao local em 2026-02-11).
 - Degradacao graciosa: falha de embeddings nao gera 500; fluxo segue com heuristicas.
 - XAI no output: achados com trechos originais e offsets para rastreabilidade.
 - Observabilidade ativa: alerta `NeurorelatoBackendDown` e smoke check pos-release automatizado.

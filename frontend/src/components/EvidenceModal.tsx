@@ -14,13 +14,13 @@ import {
 } from '@mantine/core';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
 
-import type { Evidence } from '../api/types';
+import type { Evidence, FindingMethod } from '../api/types';
 import { scoreLabel } from '../lib/scoreLabel';
 
 export type EvidenceModalState = {
   title: string;
   evidence: Evidence[];
-  meta: { score: number; method: string; negated: boolean };
+  meta: { score: number; method: FindingMethod; negated: boolean };
   sourceText?: string | null;
 };
 

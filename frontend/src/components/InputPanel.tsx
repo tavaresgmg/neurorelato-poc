@@ -44,8 +44,11 @@ export function InputPanel({
   speech,
   onUseTranscript,
 }: Props) {
+  const charCount = text.length;
+  const charOver = charCount > MAX_CHARS;
+
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canProcess) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canProcess && !charOver) {
       e.preventDefault();
       onProcess();
     }
@@ -55,9 +58,6 @@ export function InputPanel({
     if (!text.trim()) return;
     onClear();
   }
-
-  const charCount = text.length;
-  const charOver = charCount > MAX_CHARS;
 
   return (
     <Paper p="lg" radius="lg">

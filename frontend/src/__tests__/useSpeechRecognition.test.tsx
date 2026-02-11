@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { act, useState } from 'react';
+import { vi } from 'vitest';
 
 import { renderWithProviders } from './test-utils';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
@@ -91,4 +92,39 @@ test('suportado: start/resultado/stop/end', async () => {
   await act(async () => {
     instance.onend?.();
   });
+});
+
+test('cleanup: desmontar componente encerra reconhecimento ativo', () => {
+  const stop = vi.fn();
+
+  class MockSR {
+    lang = '';
+    continuous = false;
+    interimResults = false;
+    onresult: ((ev: any) => void) | null = null;
+    onerror: ((ev: any) => void) | null = null;
+    onend: (() => void) | null = null;
+
+    start() {
+      // noop
+    }
+
+    stop() {
+      stop();
+    }
+  }
+
+  // @ts-expect-error test
+  (window as any).webkitSpeechRecognition = MockSR;
+
+  function Comp() {
+    const s = useSpeechRecognition();
+    return <button onClick={s.start}>start</button>;
+  }
+
+  const { unmount } = renderWithProviders(<Comp />);
+  fireEvent.click(screen.getByText('start'));
+  unmount();
+
+  expect(stop).toHaveBeenCalledTimes(1);
 });

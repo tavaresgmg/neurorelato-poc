@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from time import perf_counter
 from typing import Any
@@ -40,12 +41,125 @@ from app.db.models import ConsultationRun, Finding, GapItem
 from app.nlp.anonymize import anonymize_text
 from app.nlp.embeddings import SafeEmbeddingProvider, get_default_provider
 from app.nlp.engine import compute_gaps, extract_findings
-from app.nlp.ontology import MOCK_ONTOLOGY, load_domains
+from app.nlp.ontology import ONTOLOGY_SOURCE, get_ontology, load_domains
 from app.nlp.summary import generate_template_summary
+from app.nlp.types import FindingHit, GapResult
 
 __all__ = ["router", "settings"]
 
 router = APIRouter(prefix="/api/v1")
+
+
+def _initial_warnings(raw_text: str) -> list[WarningItem]:
+    warnings: list[WarningItem] = []
+    if len(raw_text.strip()) < 30:
+        warnings.append(
+            WarningItem(
+                code="TEXT_TOO_SHORT",
+                message="Texto muito curto; pode reduzir a qualidade da extração.",
+            )
+        )
+    return warnings
+
+
+def _build_embeddings_provider(
+    *,
+    enable_embeddings: bool,
+    warnings: list[WarningItem],
+) -> SafeEmbeddingProvider | None:
+    if not enable_embeddings:
+        return None
+
+    PN_EMBEDDINGS_ENABLED_TOTAL.inc()
+    try:
+        return SafeEmbeddingProvider(get_default_provider())
+    except Exception:
+        warnings.append(
+            WarningItem(
+                code="EMBEDDINGS_UNAVAILABLE",
+                message="Embeddings indisponíveis; usando apenas heurísticas.",
+            )
+        )
+        return None
+
+
+def _collect_runtime_warnings(
+    *,
+    provider: SafeEmbeddingProvider | None,
+    warnings: list[WarningItem],
+) -> None:
+    if provider is None or not provider.diagnostics.had_error:
+        return
+    PN_EMBEDDINGS_RUNTIME_ERROR_TOTAL.inc()
+    warnings.append(
+        WarningItem(
+            code="EMBEDDINGS_RUNTIME_ERROR",
+            message=(
+                "Embeddings falharam em runtime; usando apenas heurísticas. "
+                f"({provider.diagnostics.error_type})"
+            ),
+        )
+    )
+
+
+def _record_pipeline_metrics(hits: list[FindingHit], gaps: list[GapResult]) -> None:
+    counts_by_domain: dict[str, int] = {}
+    for h in hits:
+        counts_by_domain[h.domain_id] = counts_by_domain.get(h.domain_id, 0) + 1
+    for domain_id, count in counts_by_domain.items():
+        PN_FINDINGS_TOTAL.labels(domain_id=domain_id).inc(count)
+    for g in gaps:
+        PN_GAPS_TOTAL.labels(domain_id=g.domain_id, gap_level=g.gap_level).inc()
+
+
+def _group_hits_by_domain(hits: list[FindingHit]) -> dict[str, list[FindingSchema]]:
+    by_domain: dict[str, list[FindingSchema]] = {}
+    for h in hits:
+        by_domain.setdefault(h.domain_id, []).append(
+            FindingSchema(
+                symptom=h.symptom,
+                score=h.score,
+                negated=h.negated,
+                method=h.method,
+                evidence=[Evidence(quote=e.quote, start=e.start, end=e.end) for e in h.evidence],
+            )
+        )
+    return by_domain
+
+
+def _group_db_findings_by_domain(findings: Sequence[Finding]) -> dict[str, list[FindingSchema]]:
+    by_domain: dict[str, list[FindingSchema]] = {}
+    for f in findings:
+        by_domain.setdefault(f.domain_id, []).append(
+            FindingSchema(
+                symptom=f.symptom,
+                score=float(f.score),
+                negated=bool(f.negated),
+                method=f.method,
+                evidence=[
+                    Evidence(
+                        quote=str(e.get("quote", "")),
+                        start=_coerce_int(e.get("start")),
+                        end=_coerce_int(e.get("end")),
+                    )
+                    for e in (f.evidence or [])
+                ],
+            )
+        )
+    return by_domain
+
+
+def _serialize_gaps(gaps: Sequence[GapResult | GapItem]) -> list[Gap]:
+    return [
+        Gap(
+            domain_id=g.domain_id,
+            domain_name=g.domain_name,
+            gap_level=g.gap_level,
+            rationale=g.rationale,
+            suggested_questions=g.suggested_questions,
+        )
+        for g in gaps
+    ]
 
 
 @router.get("/health")
@@ -55,68 +169,38 @@ def health() -> dict[str, str]:
 
 @router.get("/ontology")
 def ontology() -> dict[str, Any]:
-    return MOCK_ONTOLOGY
+    _version, data = get_ontology()
+    return data
 
 
 @router.post("/normalize", response_model=NormalizeResponse, response_model_exclude_none=True)
 def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> NormalizeResponse:  # noqa: B008
-    domains = load_domains(MOCK_ONTOLOGY)
+    ontology_version, ontology_data = get_ontology()
+    domains = load_domains(ontology_data)
     t0_total = perf_counter()
 
-    warnings: list[WarningItem] = []
-    if len(payload.text.strip()) < 30:
-        warnings.append(
-            WarningItem(
-                code="TEXT_TOO_SHORT",
-                message="Texto muito curto; pode reduzir a qualidade da extração.",
-            )
-        )
+    warnings = _initial_warnings(payload.text)
     processed_text = payload.text
     was_anonymized = False
     # Segurança/LGPD: sempre rodamos a anonimização antes de processar e persistir.
     with PN_ANONYMIZE_SECONDS.time():
         processed_text, was_anonymized, _hits = anonymize_text(payload.text)
 
-    embeddings_provider: SafeEmbeddingProvider | None = None
     enable_embeddings = payload.options.enable_embeddings or settings.enable_embeddings_by_default
-    if enable_embeddings:
-        PN_EMBEDDINGS_ENABLED_TOTAL.inc()
-        try:
-            embeddings_provider = SafeEmbeddingProvider(get_default_provider())
-        except Exception:
-            warnings.append(
-                WarningItem(
-                    code="EMBEDDINGS_UNAVAILABLE",
-                    message="Embeddings indisponíveis; usando apenas heurísticas.",
-                )
-            )
+    embeddings_provider = _build_embeddings_provider(
+        enable_embeddings=enable_embeddings,
+        warnings=warnings,
+    )
 
     with PN_EXTRACT_SECONDS.time():
         hits = extract_findings(processed_text, domains, embeddings_provider=embeddings_provider)
-    if embeddings_provider is not None and embeddings_provider.diagnostics.had_error:
-        PN_EMBEDDINGS_RUNTIME_ERROR_TOTAL.inc()
-        warnings.append(
-            WarningItem(
-                code="EMBEDDINGS_RUNTIME_ERROR",
-                message=(
-                    "Embeddings falharam em runtime; usando apenas heurísticas. "
-                    f"({embeddings_provider.diagnostics.error_type})"
-                ),
-            )
-        )
+    _collect_runtime_warnings(provider=embeddings_provider, warnings=warnings)
     with PN_GAPS_SECONDS.time():
         gaps = compute_gaps(domains, hits)
     with PN_SUMMARY_SECONDS.time():
         summary_text = generate_template_summary(domains, hits, gaps)
 
-    # Métricas agregadas (sem PII).
-    counts_by_domain: dict[str, int] = {}
-    for h in hits:
-        counts_by_domain[h.domain_id] = counts_by_domain.get(h.domain_id, 0) + 1
-    for domain_id, n in counts_by_domain.items():
-        PN_FINDINGS_TOTAL.labels(domain_id=domain_id).inc(n)
-    for g in gaps:
-        PN_GAPS_TOTAL.labels(domain_id=g.domain_id, gap_level=g.gap_level).inc()
+    _record_pipeline_metrics(hits, gaps)
 
     run = ConsultationRun(
         id=uuid.uuid4(),
@@ -124,7 +208,7 @@ def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> Norma
         text_length=len(payload.text),
         was_anonymized=was_anonymized,
         text_redacted=processed_text if was_anonymized else None,
-        ontology_version="mock-1",
+        ontology_version=ontology_version,
         summary_text=summary_text,
         summary_generated_by="template",
     )
@@ -166,22 +250,12 @@ def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> Norma
     finally:
         PN_NORMALIZE_SECONDS.observe(perf_counter() - t0_total)
 
-    hits_by_domain: dict[str, list[FindingSchema]] = {}
-    for h in hits:
-        hits_by_domain.setdefault(h.domain_id, []).append(
-            FindingSchema(
-                symptom=h.symptom,
-                score=h.score,
-                negated=h.negated,
-                method=h.method,
-                evidence=[Evidence(quote=e.quote, start=e.start, end=e.end) for e in h.evidence],
-            )
-        )
+    hits_by_domain = _group_hits_by_domain(hits)
 
     return NormalizeResponse(
         request_id=str(run.id),
         created_at=run.created_at,
-        ontology={"version": "mock-1", "source": "embedded-json"},
+        ontology={"version": ontology_version, "source": ONTOLOGY_SOURCE},
         input=InputInfo(
             text_length=len(payload.text),
             was_anonymized=was_anonymized,
@@ -195,16 +269,7 @@ def normalize(payload: NormalizeRequest, db: Session = Depends(get_db)) -> Norma
             )
             for d in domains
         ],
-        gaps=[
-            Gap(
-                domain_id=g.domain_id,
-                domain_name=g.domain_name,
-                gap_level=g.gap_level,
-                rationale=g.rationale,
-                suggested_questions=g.suggested_questions,
-            )
-            for g in gaps
-        ],
+        gaps=_serialize_gaps(gaps),
         summary=Summary(text=summary_text, generated_by="template"),
         warnings=warnings,
     )
@@ -264,7 +329,8 @@ def get_run(run_id: str, db: Session = Depends(get_db)) -> NormalizeResponse:  #
     if run is None:
         raise HTTPException(status_code=404, detail="Run nao encontrado.")
 
-    domains = load_domains(MOCK_ONTOLOGY)
+    _resolved_version, ontology_data = get_ontology(run.ontology_version)
+    domains = load_domains(ontology_data)
 
     findings = (
         db.execute(select(Finding).where(Finding.run_id == run_uuid).order_by(Finding.id.asc()))
@@ -277,29 +343,12 @@ def get_run(run_id: str, db: Session = Depends(get_db)) -> NormalizeResponse:  #
         .all()
     )
 
-    hits_by_domain: dict[str, list[FindingSchema]] = {}
-    for f in findings:
-        hits_by_domain.setdefault(f.domain_id, []).append(
-            FindingSchema(
-                symptom=f.symptom,
-                score=float(f.score),
-                negated=bool(f.negated),
-                method=f.method,
-                evidence=[
-                    Evidence(
-                        quote=str(e.get("quote", "")),
-                        start=_coerce_int(e.get("start")),
-                        end=_coerce_int(e.get("end")),
-                    )
-                    for e in (f.evidence or [])
-                ],
-            )
-        )
+    hits_by_domain = _group_db_findings_by_domain(findings)
 
     return NormalizeResponse(
         request_id=str(run.id),
         created_at=run.created_at,
-        ontology={"version": run.ontology_version, "source": "embedded-json"},
+        ontology={"version": run.ontology_version, "source": ONTOLOGY_SOURCE},
         input=InputInfo(
             text_length=run.text_length,
             was_anonymized=run.was_anonymized,
@@ -313,16 +362,7 @@ def get_run(run_id: str, db: Session = Depends(get_db)) -> NormalizeResponse:  #
             )
             for d in domains
         ],
-        gaps=[
-            Gap(
-                domain_id=g.domain_id,
-                domain_name=g.domain_name,
-                gap_level=g.gap_level,
-                rationale=g.rationale,
-                suggested_questions=g.suggested_questions,
-            )
-            for g in gaps
-        ],
+        gaps=_serialize_gaps(gaps),
         summary=Summary(text=run.summary_text, generated_by=run.summary_generated_by),
         warnings=[],
     )
