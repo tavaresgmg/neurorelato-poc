@@ -61,37 +61,35 @@ describe('ClinicalDashboard', () => {
     expect(screen.getByText(/Resumo clínico de teste/)).toBeInTheDocument();
   });
 
-  it('renders domain pills for all domains including gaps', () => {
+  it('renders StatsRow with KPI labels', () => {
+    renderWithProviders(<ClinicalDashboard result={mockResult} />);
+    expect(screen.getByText('lacunas')).toBeInTheDocument();
+    expect(screen.getByText('cobertura')).toBeInTheDocument();
+  });
+
+  it('renders domain cards for all domains including gaps', () => {
     renderWithProviders(<ClinicalDashboard result={mockResult} />);
     expect(screen.getByText('Interação Social')).toBeInTheDocument();
     expect(screen.getByText('TDAH')).toBeInTheDocument();
     expect(screen.getByText('Comportamento Repetitivo')).toBeInTheDocument();
   });
 
-  it('expands domain detail when pill is clicked', async () => {
+  it('expands domain detail when card is clicked', async () => {
     renderWithProviders(<ClinicalDashboard result={mockResult} />);
-    await userEvent.click(screen.getByText('Interação Social'));
+    const card = screen.getByText('Interação Social').closest('.pn-domain-card')!;
+    await userEvent.click(card);
     expect(screen.getByText('Contato visual reduzido')).toBeInTheDocument();
   });
 
-  it('collapses domain detail when same pill is clicked again', async () => {
+  it('shows gap domain cards with gap styling', () => {
     renderWithProviders(<ClinicalDashboard result={mockResult} />);
-    const pill = screen.getByText('Interação Social').closest('button')!;
-    await userEvent.click(pill);
-    expect(screen.getByText('Contato visual reduzido')).toBeInTheDocument();
-    await userEvent.click(pill);
-    // Collapse animation may keep element in DOM — verifying toggle behavior via state
+    const gapCard = screen.getByText('Comportamento Repetitivo').closest('.pn-domain-card');
+    expect(gapCard?.className).toContain('pn-domain-card--gap');
   });
 
-  it('shows gap domain pills with gap styling', () => {
+  it('shows findings info in domain cards', () => {
     renderWithProviders(<ClinicalDashboard result={mockResult} />);
-    const gapPill = screen.getByText('Comportamento Repetitivo').closest('button');
-    expect(gapPill?.className).toContain('pn-domain-pill--gap');
-  });
-
-  it('shows findings count on domain pills', () => {
-    renderWithProviders(<ClinicalDashboard result={mockResult} />);
-    expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2 achados')).toBeInTheDocument();
+    expect(screen.getByText('1 achados')).toBeInTheDocument();
   });
 });
