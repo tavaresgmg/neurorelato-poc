@@ -188,9 +188,9 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
               <PolarGrid stroke={radarColors.grid} />
               <PolarAngleAxis
                 dataKey="domain"
-                tick={(props: Record<string, unknown>) => (
+                tick={(props: object) => (
                   <CustomRadarTick
-                    {...props}
+                    {...(props as Pick<RadarTickProps, 'x' | 'y' | 'payload'>)}
                     activeDomainId={activeDomainId}
                     radarData={radarData}
                     radarColors={radarColors}
@@ -207,7 +207,7 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
                 dot={{ r: 4, fill: radarColors.fill }}
               />
               <RechartsTooltip
-                formatter={(value: number) => [`${value}%`, 'Cobertura']}
+                formatter={(value: number | undefined) => [`${value ?? 0}%`, 'Cobertura']}
                 contentStyle={{
                   background: isDark ? '#1e1e2e' : '#fff',
                   border: `1px solid ${isDark ? 'rgba(148, 163, 228, 0.2)' : '#DEE2E6'}`,
