@@ -19,7 +19,6 @@ from app.core.config import settings
 from app.core.errors import ApiError
 from app.core.logging import install_pii_redaction_filters
 from app.core.metrics import setup_prometheus_metrics
-from app.core.security import BasicAuthMiddleware
 from app.db.session import make_engine, make_sessionmaker
 
 
@@ -139,14 +138,6 @@ def create_app(*, database_url: str | None = None, init_db: bool = False) -> Fas
         @app.get("/{path:path}", include_in_schema=False)
         def spa_fallback(path: str) -> FileResponse:  # noqa: ARG001
             return FileResponse(static_dir / "index.html")
-
-    if settings.basic_auth_user and settings.basic_auth_password:
-        app.add_middleware(
-            BasicAuthMiddleware,
-            username=settings.basic_auth_user,
-            password=settings.basic_auth_password,
-            exempt_paths={"/api/v1/health"},
-        )
 
     return app
 

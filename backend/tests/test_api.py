@@ -15,6 +15,12 @@ def test_health_ok() -> None:
         assert r.json() == {"status": "ok"}
 
 
+def test_ontology_is_public_without_auth() -> None:
+    with TestClient(create_app(database_url="sqlite+pysqlite:///:memory:", init_db=True)) as client:
+        r = client.get("/api/v1/ontology")
+        assert r.status_code == 200
+
+
 def test_every_response_has_request_id_header() -> None:
     with TestClient(create_app(database_url="sqlite+pysqlite:///:memory:", init_db=True)) as client:
         r = client.get("/api/v1/health")

@@ -117,15 +117,8 @@ APP_BASE_URL="$(heroku apps:info -a "$APP_NAME" --json | jq -r '.app.web_url')"
 PROM_BASE_URL="$(heroku apps:info -a "$PROM_APP" --json | jq -r '.app.web_url')"
 GRAFANA_BASE_URL="$(heroku apps:info -a "$GRAFANA_APP" --json | jq -r '.app.web_url')"
 
-APP_USER="$(heroku config:get -a "$APP_NAME" PN_BASIC_AUTH_USER)"
-APP_PASS="$(heroku config:get -a "$APP_NAME" PN_BASIC_AUTH_PASSWORD)"
 GRAFANA_USER="$(heroku config:get -a "$GRAFANA_APP" GF_SECURITY_ADMIN_USER)"
 GRAFANA_PASS="$(heroku config:get -a "$GRAFANA_APP" GF_SECURITY_ADMIN_PASSWORD)"
-
-if [ -z "$APP_USER" ] || [ -z "$APP_PASS" ]; then
-  echo "ERRO: PN_BASIC_AUTH_USER/PASSWORD nao definidos em $APP_NAME" >&2
-  exit 1
-fi
 
 if [ -z "$GRAFANA_USER" ] || [ -z "$GRAFANA_PASS" ]; then
   echo "ERRO: GF_SECURITY_ADMIN_USER/PASSWORD nao definidos em $GRAFANA_APP" >&2
@@ -133,20 +126,14 @@ if [ -z "$GRAFANA_USER" ] || [ -z "$GRAFANA_PASS" ]; then
 fi
 
 metrics_no_auth="$(curl -s -o /dev/null -w '%{http_code}' "${APP_BASE_URL}metrics")"
-metrics_with_auth="$(curl -u "$APP_USER:$APP_PASS" -s -o /dev/null -w '%{http_code}' "${APP_BASE_URL}metrics")"
 
 retry_cmd "target ${PROM_BACKEND_JOB_NAME} em /api/v1/targets" fetch_target_health
 retry_cmd "query up{job=${PROM_BACKEND_JOB_NAME}}" fetch_up_value
 retry_cmd "health do datasource Prometheus no Grafana" fetch_grafana_ds_status
 retry_cmd "consulta de alertas Prometheus" fetch_alert_state
 
-[ "$metrics_no_auth" = "401" ] || {
-  echo "FALHA: /metrics sem auth deveria retornar 401, retornou ${metrics_no_auth}" >&2
-  exit 1
-}
-
-[ "$metrics_with_auth" = "200" ] || {
-  echo "FALHA: /metrics com auth deveria retornar 200, retornou ${metrics_with_auth}" >&2
+[ "$metrics_no_auth" = "200" ] || {
+  echo "FALHA: /metrics sem auth deveria retornar 200, retornou ${metrics_no_auth}" >&2
   exit 1
 }
 
@@ -165,8 +152,7 @@ retry_cmd "consulta de alertas Prometheus" fetch_alert_state
   exit 1
 }
 
-printf '%s\n' "OK: metrics_no_auth=401"
-printf '%s\n' "OK: metrics_with_auth=200"
+printf '%s\n' "OK: metrics_no_auth=200"
 printf '%s\n' "OK: target_health=${TARGET_HEALTH}"
 printf '%s\n' "OK: up_value=${UP_VALUE}"
 printf '%s\n' "OK: grafana_ds_status=${GRAFANA_DS_STATUS}"

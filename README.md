@@ -119,8 +119,7 @@ npm run test:coverage
 
 ### Demo (Heroku)
 
-- App, Swagger, OpenAPI e `/metrics` protegidos por Basic Auth no remoto.
-- Credenciais do ambiente de avaliacao sao compartilhadas por canal seguro.
+- App e API acessiveis publicamente no remoto.
 - App: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/`
 - API health: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/api/v1/health`
 - Swagger: `https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs`

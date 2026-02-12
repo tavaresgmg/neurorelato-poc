@@ -15,9 +15,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     environment:
-      # Demo knobs (optional). If user/pass are unset/empty, Basic Auth is disabled.
-      PN_BASIC_AUTH_USER: ""
-      PN_BASIC_AUTH_PASSWORD: ""
       PN_DATABASE_URL: postgresql+psycopg://plataformaneuro:plataformaneuro@db:5432/plataformaneuro
       # Policies (server-side).
       PN_ENABLE_EMBEDDINGS_BY_DEFAULT: "${PN_ENABLE_EMBEDDINGS_BY_DEFAULT:-true}"

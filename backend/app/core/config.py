@@ -24,10 +24,6 @@ class Settings(BaseSettings):
             v = "postgresql+psycopg://" + v.removeprefix("postgresql://")
         return v
 
-    # Basic Auth (demo). If user/pass are unset, auth is disabled.
-    basic_auth_user: str | None = None
-    basic_auth_password: str | None = None
-
     # Policy toggles for demo/prod-hardening.
     # These flags exist to keep the UI flexible while allowing a "safe default" in hosted demos.
     enable_embeddings_by_default: bool = Field(

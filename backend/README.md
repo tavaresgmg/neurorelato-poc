@@ -40,8 +40,6 @@ Cobertura:
 ## Variáveis de Ambiente
 
 - `PN_DATABASE_URL` (ou `DATABASE_URL` no Heroku)
-- `PN_BASIC_AUTH_USER`
-- `PN_BASIC_AUTH_PASSWORD`
 - `PN_ENABLE_EMBEDDINGS_BY_DEFAULT=true|false`
 - `PN_EMBEDDINGS_WARMUP=true|false`
 - `PN_EMBEDDINGS_MODEL` (default: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`)
