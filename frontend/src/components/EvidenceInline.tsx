@@ -12,7 +12,7 @@ export function EvidenceInline({ evidence, sourceText }: Props) {
   if (evidence.length === 0) {
     return (
       <Text size="sm" c="dimmed" py="xs">
-        Sem evidências registradas.
+        Sem trechos correspondentes no relato.
       </Text>
     );
   }

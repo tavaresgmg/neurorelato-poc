@@ -28,13 +28,13 @@ export function DomainCard({ point, isActive, onClick }: Props) {
 
   const cardTooltip = isGapOnly
     ? 'Clique para ver sugestões de investigação'
-    : 'Clique para ver achados e evidências';
+    : 'Clique para ver detalhes e trechos do relato';
 
   return (
     <Tooltip label={cardTooltip} position="top" withArrow openDelay={400}>
       <Paper className={className} onClick={onClick} style={{ cursor: 'pointer' }}>
         <Group wrap="nowrap">
-          <Tooltip label="Cobertura do domínio" position="left" withArrow openDelay={600}>
+          <Tooltip label="Cobertura da área" position="left" withArrow openDelay={600}>
             <RingProgress
               size={52}
               thickness={4}
@@ -58,7 +58,7 @@ export function DomainCard({ point, isActive, onClick }: Props) {
                 {point.findingsCount} achados
               </Text>
               {point.isGap && (
-                <Tooltip label="Domínio com investigação insuficiente" withArrow openDelay={300}>
+                <Tooltip label="Área com investigação insuficiente" withArrow openDelay={300}>
                   <Text size="xs" c="orange" style={{ cursor: 'help' }}>
                     lacuna
                   </Text>

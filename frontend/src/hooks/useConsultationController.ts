@@ -65,7 +65,7 @@ export function useConsultationController({ speech, onResultReady }: Params) {
       void loadHistory();
       onResultReady?.();
     } catch (err) {
-      notifyError('Falha ao processar', err);
+      notifyError('Falha ao analisar', err);
     } finally {
       setLoading(false);
     }

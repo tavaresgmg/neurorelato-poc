@@ -26,7 +26,7 @@ function FindingRow({ finding, sourceText }: { finding: Finding; sourceText?: st
 
   return (
     <Box>
-      <Tooltip label={opened ? 'Clique para recolher' : 'Clique para ver evidências'} position="left" withArrow openDelay={500}>
+      <Tooltip label={opened ? 'Clique para recolher' : 'Clique para ver trechos do relato'} position="left" withArrow openDelay={500}>
         <UnstyledButton onClick={toggle} w="100%" py={6}>
           <Group justify="space-between" align="center" gap="xs">
             <Group gap="xs" style={{ flex: 1 }}>
@@ -35,9 +35,9 @@ function FindingRow({ finding, sourceText }: { finding: Finding; sourceText?: st
                 {finding.symptom}
               </Text>
               {finding.negated && (
-                <Tooltip label="Sintoma mencionado como ausente no texto" withArrow openDelay={300}>
+                <Tooltip label="Mencionado como ausente no relato" withArrow openDelay={300}>
                   <Badge color="red" variant="filled" size="xs" style={{ cursor: 'help' }}>
-                    Negado
+                    Ausente
                   </Badge>
                 </Tooltip>
               )}

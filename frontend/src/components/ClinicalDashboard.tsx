@@ -143,7 +143,7 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
       {/* 4. Grid of domain cards */}
       <Box>
         <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="sm">
-          Domínios
+          Áreas avaliadas
         </Text>
         <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} spacing="sm">
           {radarData.map((point) => (

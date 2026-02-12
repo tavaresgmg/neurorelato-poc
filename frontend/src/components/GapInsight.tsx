@@ -17,11 +17,11 @@ export function GapInsight({ gap, onInsertQuestion }: Props) {
       borderRadius: 'var(--mantine-radius-sm)',
       border: '1px dashed var(--pn-gap-border)',
     }}>
-      <Tooltip label="Sugestões para completar a avaliação deste domínio" position="top" withArrow openDelay={400}>
+      <Tooltip label="Sugestões para complementar a avaliação desta área" position="top" withArrow openDelay={400}>
         <Group gap="xs" style={{ cursor: 'help' }}>
           <IconSearch size={14} style={{ color: 'var(--pn-gap-icon)' }} />
           <Text size="sm" fw={600} c="orange.8">
-            Investigar
+            Pontos a explorar
           </Text>
         </Group>
       </Tooltip>
@@ -37,7 +37,7 @@ export function GapInsight({ gap, onInsertQuestion }: Props) {
               </Text>
               <Group gap={2} wrap="nowrap">
                 {onInsertQuestion && (
-                  <Tooltip label="Inserir na narrativa">
+                  <Tooltip label="Adicionar ao relato">
                     <ActionIcon
                       size="xs"
                       variant="subtle"

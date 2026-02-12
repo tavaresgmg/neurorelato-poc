@@ -55,7 +55,7 @@ export async function normalize(payload: NormalizeRequest): Promise<NormalizeRes
         enable_embeddings: payload.options?.enable_embeddings ?? false,
       },
     }),
-  }, 'Falha ao processar texto');
+  }, 'Falha ao analisar relato');
 }
 
 export async function getHistory(limit = 20): Promise<HistoryItem[]> {

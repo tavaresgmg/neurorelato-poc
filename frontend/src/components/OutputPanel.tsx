@@ -37,7 +37,7 @@ export const OutputPanel = forwardRef<HTMLDivElement, Props>(function OutputPane
           <EmptyState
             icon={<IconBrain size={24} />}
             title="Pronto para analisar"
-            description="Cole ou dite a narrativa clínica e clique em Processar."
+            description="Cole ou dite o relato da consulta e clique em Analisar."
           />
         </Paper>
       ) : (

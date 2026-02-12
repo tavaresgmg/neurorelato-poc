@@ -99,10 +99,10 @@ afterEach(() => {
 
 test('renderiza cabecalho e botao processar', async () => {
   renderWithProviders(<App />);
-  expect(screen.getByText(/Normalização Semântica/i)).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /Processar/i })).toBeInTheDocument();
+  expect(screen.getByText(/Análise Clínica Estruturada/i)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Analisar/i })).toBeInTheDocument();
   await waitFor(() => {
-    expect(screen.getByText(/Sem itens ainda/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nenhuma análise realizada/i)).toBeInTheDocument();
   });
 });
 
@@ -110,7 +110,7 @@ test('sobre: abre modal com objetivos da PoC', async () => {
   renderWithProviders(<App />);
 
   fireEvent.click(screen.getByLabelText(/Sobre/i));
-  expect(await screen.findByText(/O que esta PoC implementa/i)).toBeInTheDocument();
+  expect(await screen.findByText(/O que o NeuroRelato faz/i)).toBeInTheDocument();
 });
 
 test('processa texto e renderiza achados e lacunas', async () => {
@@ -136,11 +136,11 @@ test('processa texto e renderiza achados e lacunas', async () => {
 
   renderWithProviders(<App />);
 
-  fireEvent.change(screen.getByPlaceholderText(/Cole aqui/i), {
+  fireEvent.change(screen.getByPlaceholderText(/Cole o relato/i), {
     target: { value: 'texto de teste' },
   });
 
-  fireEvent.click(screen.getByRole('button', { name: /Processar/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Analisar/i }));
 
   await waitFor(() => {
     expect(screen.getByText(/Comunicação e Interação Social/i)).toBeInTheDocument();
@@ -167,7 +167,7 @@ test('audio desabilitado quando navegador nao suporta SpeechRecognition', async 
   const btn = screen.getByLabelText(/Iniciar áudio/i);
   expect(btn).toBeDisabled();
   await waitFor(() => {
-    expect(screen.getByText(/Sem itens ainda/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nenhuma análise realizada/i)).toBeInTheDocument();
   });
 });
 
@@ -230,10 +230,10 @@ test('audio suportado: inicia, transcreve, usa transcricao e para', async () => 
     });
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Usar transcrição/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Inserir ditado/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Usar transcrição/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Inserir ditado/i }));
     expect(screen.getByDisplayValue(/primeira frase/i)).toBeInTheDocument();
 
     const stopBtn = screen.getByLabelText(/Parar áudio/i);
@@ -287,10 +287,10 @@ test('renderiza achados com barras de confianca ao expandir dominio', async () =
 
   renderWithProviders(<App />);
 
-  fireEvent.change(screen.getByPlaceholderText(/Cole aqui/i), {
+  fireEvent.change(screen.getByPlaceholderText(/Cole o relato/i), {
     target: { value: 'texto de teste' },
   });
-  fireEvent.click(screen.getByRole('button', { name: /Processar/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Analisar/i }));
 
   await waitFor(() => {
     expect(screen.getByText(/Comunicação e Interação Social/i)).toBeInTheDocument();
@@ -320,14 +320,14 @@ test('mostra notificacao quando API falha', async () => {
 
   renderWithProviders(<App />);
 
-  fireEvent.change(screen.getByPlaceholderText(/Cole aqui/i), {
+  fireEvent.change(screen.getByPlaceholderText(/Cole o relato/i), {
     target: { value: 'texto de teste' },
   });
-  fireEvent.click(screen.getByRole('button', { name: /Processar/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Analisar/i }));
 
   await waitFor(() => {
     const alerts = screen.getAllByRole('alert');
     expect(alerts.length).toBeGreaterThan(0);
-    expect(alerts[0]).toHaveTextContent('Falha ao processar');
+    expect(alerts[0]).toHaveTextContent('Falha ao analisar');
   });
 });

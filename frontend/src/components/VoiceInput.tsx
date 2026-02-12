@@ -100,7 +100,7 @@ export function VoiceInput({ speech, onUseTranscript }: Props) {
               onClick={onUseTranscript}
               style={{ flexShrink: 0 }}
             >
-              Usar transcrição
+              Inserir ditado
             </Button>
           </Group>
         </Box>

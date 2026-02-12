@@ -43,8 +43,8 @@ Objetivo da consulta:
 Registrar sinais e lacunas para orientar investigação clínica, sem concluir diagnóstico.`,
   },
   {
-    label: 'Com dados pessoais (PII)',
-    description: 'Narrativa curta com nome, e-mail, telefone e CPF para testar anonimização.',
+    label: 'Com dados pessoais',
+    description: 'Relato curto com nome, e-mail, telefone e CPF — serão removidos automaticamente.',
     text: `Paciente do sexo masculino, 7 anos. Narrativa de familiares.
 
 Meu filho João Pedro tem 7 anos. Contato para retorno: joao@example.com e telefone (11) 91234-5678.
@@ -57,8 +57,8 @@ Fica irritado quando muda a rotina. Em casa, é muito agitado e não para quieto
 Objetivo: demonstrar anonimização antes de processar/salvar texto.`,
   },
   {
-    label: 'Seguimento (repetições)',
-    description: 'Consulta de seguimento com múltiplas ocorrências do mesmo sintoma.',
+    label: 'Consulta de seguimento',
+    description: 'Retorno com sintomas recorrentes em diferentes contextos.',
     text: `Consulta de seguimento (pediatria do desenvolvimento). Responsável presente.
 
 Queixa principal:
@@ -86,8 +86,8 @@ Testar múltiplas ocorrências do mesmo sintoma e garantir que o sistema retorne
 (top N) para legibilidade e auditoria.`,
   },
   {
-    label: 'Narrativa completa (grande)',
-    description: 'Caso extenso com diário de 7 dias, transcrições e contradições intencionais.',
+    label: 'Caso extenso',
+    description: 'Caso detalhado com diário de 7 dias e múltiplos informantes.',
     text: `Consulta clínica (pediatria do desenvolvimento / neuropsiquiatria infantil).
 Data: 2026-02-10. Participantes: mãe, pai e professora (relato escrito).
 

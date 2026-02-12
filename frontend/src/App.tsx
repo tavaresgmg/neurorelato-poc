@@ -85,14 +85,14 @@ export default function App() {
                     </Text>
                   </Group>
                   <Text fz={12} c="dimmed" visibleFrom="sm">
-                    Normalização Semântica
+                    Análise Clínica Estruturada
                   </Text>
                 </Box>
               </Group>
             </UnstyledButton>
           </Group>
           <Group gap="xs">
-            <Tooltip label="Sobre esta PoC">
+            <Tooltip label="Sobre o NeuroRelato">
               <ActionIcon
                 variant="subtle"
                 color="gray"

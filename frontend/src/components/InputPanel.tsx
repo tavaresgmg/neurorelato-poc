@@ -59,9 +59,9 @@ export function InputPanel({
       <Stack gap="sm">
         <Group justify="space-between" align="center">
           <Box>
-            <Text fw={700}>Entrada</Text>
+            <Text fw={700}>Relato clínico</Text>
             <Text size="sm" c="dimmed">
-              Cole o texto ou use áudio. Nesta PoC, a anonimização é aplicada por padrão (LGPD).
+              Cole ou dite o relato da consulta. Dados pessoais são removidos automaticamente.
             </Text>
           </Box>
           <Menu shadow="md" width={280} position="bottom-end">
@@ -71,7 +71,7 @@ export function InputPanel({
               </Button>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Label>Textos de teste</Menu.Label>
+              <Menu.Label>Casos exemplo</Menu.Label>
               {SAMPLE_TEXTS.map((s) => (
                 <Menu.Item key={s.label} onClick={() => onChangeText(s.text)}>
                   <Text size="sm" fw={600}>{s.label}</Text>
@@ -89,8 +89,8 @@ export function InputPanel({
             onKeyDown={handleKeyDown}
             minRows={8}
             autosize
-            placeholder="Cole aqui a narrativa da consulta..."
-            error={charOver ? `Texto muito longo (máx. ${MAX_CHARS.toLocaleString('pt-BR')} caracteres)` : undefined}
+            placeholder="Cole o relato da consulta aqui..."
+            error={charOver ? `Relato muito longo (máx. ${MAX_CHARS.toLocaleString('pt-BR')} caracteres)` : undefined}
           />
           <Group justify="flex-end" mt={4}>
             <Text size="xs" c={charOver ? 'red' : 'dimmed'}>
@@ -104,7 +104,7 @@ export function InputPanel({
         <Group justify="flex-end">
           <Tooltip label="⌘ Enter" position="bottom" openDelay={500}>
             <Button onClick={onProcess} loading={loading} disabled={!canProcess || charOver}>
-              Processar
+              Analisar
             </Button>
           </Tooltip>
           <Button variant="default" onClick={handleClear} disabled={loading || !text.trim()}>

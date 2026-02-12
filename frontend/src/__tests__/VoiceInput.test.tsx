@@ -96,6 +96,6 @@ test('VoiceInput: mostra transcrição e botão Usar transcrição', () => {
   );
 
   expect(screen.getByText(/fala reconhecida/i)).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: /Usar transcrição/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Inserir ditado/i }));
   expect(onUse).toHaveBeenCalledTimes(1);
 });

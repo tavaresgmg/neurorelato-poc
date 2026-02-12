@@ -10,7 +10,7 @@ type Props = {
 export function StatsRow({ totalFindings, totalGaps, overallCoverage }: Props) {
   return (
     <SimpleGrid cols={{ base: 1, xs: 3 }}>
-      <Tooltip label="Sintomas e comportamentos identificados no texto" position="bottom" withArrow>
+      <Tooltip label="Sinais e comportamentos identificados no relato" position="bottom" withArrow>
         <Paper p="md">
           <Group gap="sm" wrap="nowrap">
             <ThemeIcon color="green" variant="light" size="lg" radius="xl">
@@ -28,7 +28,7 @@ export function StatsRow({ totalFindings, totalGaps, overallCoverage }: Props) {
         </Paper>
       </Tooltip>
 
-      <Tooltip label="Domínios clínicos com avaliação insuficiente" position="bottom" withArrow>
+      <Tooltip label="Áreas clínicas com avaliação insuficiente" position="bottom" withArrow>
         <Paper p="md">
           <Group gap="sm" wrap="nowrap">
             <ThemeIcon color="orange" variant="light" size="lg" radius="xl">
@@ -46,7 +46,7 @@ export function StatsRow({ totalFindings, totalGaps, overallCoverage }: Props) {
         </Paper>
       </Tooltip>
 
-      <Tooltip label="Média de cobertura dos domínios avaliados" position="bottom" withArrow>
+      <Tooltip label="Média de cobertura das áreas avaliadas" position="bottom" withArrow>
         <Paper p="md">
           <Group gap="sm" wrap="nowrap">
             <RingProgress

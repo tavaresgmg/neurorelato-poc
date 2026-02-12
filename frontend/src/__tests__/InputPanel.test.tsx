@@ -47,7 +47,7 @@ test('InputPanel: audio desabilita quando nao suportado e transcript permite ins
   );
 
   expect(screen.getByLabelText(/Iniciar áudio/i)).toBeDisabled();
-  fireEvent.click(screen.getByRole('button', { name: /Usar transcrição/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Inserir ditado/i }));
   expect(onUseTranscript).toHaveBeenCalledTimes(1);
 });
 
@@ -56,7 +56,7 @@ test('InputPanel: Ctrl/Cmd+Enter dispara processamento quando permitido', () => 
   const props = baseProps();
   renderWithProviders(<InputPanel {...props} onProcess={onProcess} />);
 
-  fireEvent.keyDown(screen.getByPlaceholderText(/Cole aqui/i), { key: 'Enter', ctrlKey: true });
+  fireEvent.keyDown(screen.getByPlaceholderText(/Cole o relato/i), { key: 'Enter', ctrlKey: true });
   expect(onProcess).toHaveBeenCalledTimes(1);
 });
 
@@ -65,7 +65,7 @@ test('InputPanel: Ctrl/Cmd+Enter nao processa quando texto excede limite', () =>
   const props = baseProps();
   renderWithProviders(<InputPanel {...props} text={'a'.repeat(15_001)} onProcess={onProcess} />);
 
-  fireEvent.keyDown(screen.getByPlaceholderText(/Cole aqui/i), { key: 'Enter', ctrlKey: true });
+  fireEvent.keyDown(screen.getByPlaceholderText(/Cole o relato/i), { key: 'Enter', ctrlKey: true });
   expect(onProcess).not.toHaveBeenCalled();
 });
 
@@ -83,6 +83,6 @@ test('InputPanel: texto muito longo mostra erro e desabilita Processar', () => {
   const props = baseProps();
   renderWithProviders(<InputPanel {...props} text={tooLong} />);
 
-  expect(screen.getByText(/Texto muito longo/i)).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /Processar/i })).toBeDisabled();
+  expect(screen.getByText(/Relato muito longo/i)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Analisar/i })).toBeDisabled();
 });

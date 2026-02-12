@@ -78,6 +78,6 @@ describe('DomainDetail', () => {
       }],
     };
     renderWithProviders(<DomainDetail domain={domain} />);
-    expect(screen.getByText('Negado')).toBeInTheDocument();
+    expect(screen.getByText('Ausente')).toBeInTheDocument();
   });
 });

@@ -72,7 +72,7 @@ export function HistoryPanel({
 
       <TextInput
         size="xs"
-        placeholder="Buscar por data ou contagens…"
+        placeholder="Buscar por data…"
         leftSection={<IconSearch size={13} />}
         value={search}
         onChange={(e) => setSearch(e.currentTarget.value)}
@@ -94,7 +94,7 @@ export function HistoryPanel({
           <Stack align="center" gap={4}>
             <IconInbox size={28} style={{ opacity: 0.25 }} />
             <Text size="sm" c="dimmed">
-              Sem itens ainda.
+              Nenhuma análise realizada.
             </Text>
           </Stack>
         </Center>

@@ -25,6 +25,6 @@ describe('EvidenceInline', () => {
 
   it('renders empty message when no evidence', () => {
     renderWithProviders(<EvidenceInline evidence={[]} />);
-    expect(screen.getByText(/sem evidências/i)).toBeInTheDocument();
+    expect(screen.getByText(/sem trechos correspondentes/i)).toBeInTheDocument();
   });
 });
