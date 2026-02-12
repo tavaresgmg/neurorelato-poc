@@ -1,4 +1,4 @@
-import { Badge, Box, Collapse, Group, Paper, Stack, Text, UnstyledButton } from '@mantine/core';
+import { Badge, Box, Collapse, Group, Paper, Stack, Text, Tooltip, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 
@@ -26,35 +26,41 @@ function FindingRow({ finding, sourceText }: { finding: Finding; sourceText?: st
 
   return (
     <Box>
-      <UnstyledButton onClick={toggle} w="100%" py={6}>
-        <Group justify="space-between" align="center" gap="xs">
-          <Group gap="xs" style={{ flex: 1 }}>
-            {opened ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
-            <Text size="sm" fw={500}>
-              {finding.symptom}
-            </Text>
-            {finding.negated && (
-              <Badge color="red" variant="filled" size="xs">
-                Negado
-              </Badge>
-            )}
+      <Tooltip label={opened ? 'Clique para recolher' : 'Clique para ver evidências'} position="left" withArrow openDelay={500}>
+        <UnstyledButton onClick={toggle} w="100%" py={6}>
+          <Group justify="space-between" align="center" gap="xs">
+            <Group gap="xs" style={{ flex: 1 }}>
+              {opened ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+              <Text size="sm" fw={500}>
+                {finding.symptom}
+              </Text>
+              {finding.negated && (
+                <Tooltip label="Sintoma mencionado como ausente no texto" withArrow openDelay={300}>
+                  <Badge color="red" variant="filled" size="xs" style={{ cursor: 'help' }}>
+                    Negado
+                  </Badge>
+                </Tooltip>
+              )}
+            </Group>
+            <Tooltip label="Grau de confiança na identificação" position="top" withArrow openDelay={500}>
+              <Group gap="xs" wrap="nowrap">
+                <div className="pn-confidence-bar" style={{ width: 100 }}>
+                  <div
+                    className="pn-confidence-bar-fill"
+                    style={{
+                      width: `${pct}%`,
+                      background: confidenceColor(finding.score),
+                    }}
+                  />
+                </div>
+                <Text size="xs" fw={600} style={{ minWidth: 32 }}>
+                  {pct}%
+                </Text>
+              </Group>
+            </Tooltip>
           </Group>
-          <Group gap="xs" wrap="nowrap">
-            <div className="pn-confidence-bar" style={{ width: 100 }}>
-              <div
-                className="pn-confidence-bar-fill"
-                style={{
-                  width: `${pct}%`,
-                  background: confidenceColor(finding.score),
-                }}
-              />
-            </div>
-            <Text size="xs" fw={600} style={{ minWidth: 32 }}>
-              {pct}%
-            </Text>
-          </Group>
-        </Group>
-      </UnstyledButton>
+        </UnstyledButton>
+      </Tooltip>
       <Collapse in={opened}>
         <Box pl={22} pb="sm">
           <EvidenceInline evidence={finding.evidence} sourceText={sourceText} />

@@ -17,12 +17,14 @@ export function GapInsight({ gap, onInsertQuestion }: Props) {
       borderRadius: 'var(--mantine-radius-sm)',
       border: '1px dashed var(--pn-gap-border)',
     }}>
-      <Group gap="xs">
-        <IconSearch size={14} style={{ color: 'var(--pn-gap-icon)' }} />
-        <Text size="sm" fw={600} c="orange.8">
-          Investigar
-        </Text>
-      </Group>
+      <Tooltip label="Sugestões para completar a avaliação deste domínio" position="top" withArrow openDelay={400}>
+        <Group gap="xs" style={{ cursor: 'help' }}>
+          <IconSearch size={14} style={{ color: 'var(--pn-gap-icon)' }} />
+          <Text size="sm" fw={600} c="orange.8">
+            Investigar
+          </Text>
+        </Group>
+      </Tooltip>
       {gap.rationale && (
         <Text size="sm" c="dimmed">{gap.rationale}</Text>
       )}
