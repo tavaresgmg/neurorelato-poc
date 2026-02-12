@@ -42,8 +42,8 @@ export function AboutPanel() {
           Documentação técnica
         </Title>
         <Text c="dimmed" mt="xs">
-          API: <Anchor href="http://localhost:8000/docs" target="_blank" rel="noreferrer">
-            http://localhost:8000/docs <IconExternalLink size={14} style={{ verticalAlign: -2 }} />
+          API: <Anchor href="https://neurorelatopoc-60b95d8f43fd.herokuapp.com/docs" target="_blank" rel="noreferrer">
+            Swagger (Heroku) <IconExternalLink size={14} style={{ verticalAlign: -2 }} />
           </Anchor>
         </Text>
       </Paper>

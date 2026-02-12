@@ -39,23 +39,44 @@ function resolveActiveDomain(
   };
 }
 
-function CustomRadarTick({ x, y, payload, activeDomainId, radarData, radarColors }: any) {
+function wrapLabel(text: string, maxChars: number): string[] {
+  if (text.length <= maxChars) return [text];
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let current = '';
+  for (const w of words) {
+    if (current && (current + ' ' + w).length > maxChars) {
+      lines.push(current);
+      current = w;
+    } else {
+      current = current ? current + ' ' + w : w;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+function CustomRadarTick({ x, y, payload, activeDomainId, radarData, radarColors, cy }: any) {
   const point = radarData[payload.index];
   const isActive = activeDomainId === point?.domainId;
-  const label =
-    payload.value.length > 14 ? payload.value.slice(0, 12) + '\u2026' : payload.value;
+  const lines = wrapLabel(payload.value, 20);
+  const isTop = y < (cy ?? 200);
+  const baseOffset = isTop ? -10 : 10;
   return (
     <text
       x={x}
       y={y}
       textAnchor="middle"
-      dy={y < 160 ? -8 : 8}
       fontSize={12}
       fontWeight={isActive ? 700 : 400}
       fill={isActive ? radarColors.tickActive : radarColors.tick}
       style={{ cursor: 'pointer' }}
     >
-      {label}
+      {lines.map((line, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? baseOffset : 14}>
+          {line}
+        </tspan>
+      ))}
     </text>
   );
 }
@@ -103,9 +124,9 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
 
       {/* 3. Radar hero — centered, larger */}
       {radarData.length > 2 && (
-        <Box style={{ width: '100%', maxWidth: 480, height: 320, margin: '0 auto' }}>
+        <Box style={{ width: '100%', maxWidth: 620, height: 420, margin: '0 auto' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="60%">
+            <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="50%">
               <PolarGrid stroke={radarColors.grid} />
               <PolarAngleAxis
                 dataKey="domain"
@@ -115,6 +136,7 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
                     activeDomainId={activeDomainId}
                     radarData={radarData}
                     radarColors={radarColors}
+                    cy={210}
                   />
                 )}
               />
