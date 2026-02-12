@@ -9,7 +9,7 @@ type Props = {
 
 export function StatsRow({ totalFindings, totalGaps, overallCoverage }: Props) {
   return (
-    <SimpleGrid cols={{ base: 3 }}>
+    <SimpleGrid cols={{ base: 1, xs: 3 }}>
       <Paper p="md">
         <Group gap="sm" wrap="nowrap">
           <ThemeIcon color="green" variant="light" size="lg" radius="xl">

@@ -1,4 +1,4 @@
-import { Box, Collapse, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Box, Collapse, SimpleGrid, Stack, Text, useMantineColorScheme } from '@mantine/core';
 import { useState } from 'react';
 import {
   PolarAngleAxis,
@@ -39,7 +39,7 @@ function resolveActiveDomain(
   };
 }
 
-function CustomRadarTick({ x, y, payload, activeDomainId, radarData }: any) {
+function CustomRadarTick({ x, y, payload, activeDomainId, radarData, radarColors }: any) {
   const point = radarData[payload.index];
   const isActive = activeDomainId === point?.domainId;
   const label =
@@ -52,7 +52,7 @@ function CustomRadarTick({ x, y, payload, activeDomainId, radarData }: any) {
       dy={y < 160 ? -8 : 8}
       fontSize={12}
       fontWeight={isActive ? 700 : 400}
-      fill={isActive ? '#4C6EF5' : '#868E96'}
+      fill={isActive ? radarColors.tickActive : radarColors.tick}
       style={{ cursor: 'pointer' }}
     >
       {label}
@@ -62,7 +62,17 @@ function CustomRadarTick({ x, y, payload, activeDomainId, radarData }: any) {
 
 export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
   const [activeDomainId, setActiveDomainId] = useState<string | null>(null);
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
   const radarData = buildRadarData(result.domains, result.gaps);
+
+  const radarColors = {
+    grid: isDark ? 'rgba(255, 255, 255, 0.12)' : '#DEE2E6',
+    stroke: isDark ? '#748FFC' : '#4C6EF5',
+    fill: isDark ? '#748FFC' : '#4C6EF5',
+    tick: isDark ? '#ADB5BD' : '#868E96',
+    tickActive: isDark ? '#748FFC' : '#4C6EF5',
+  };
 
   const totalFindings = result.domains.reduce((acc, d) => acc + d.findings.length, 0);
   const overallCoverage =
@@ -96,7 +106,7 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
         <Box style={{ width: '100%', maxWidth: 480, height: 320, margin: '0 auto' }}>
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="60%">
-              <PolarGrid stroke="#DEE2E6" />
+              <PolarGrid stroke={radarColors.grid} />
               <PolarAngleAxis
                 dataKey="domain"
                 tick={(props: any) => (
@@ -104,19 +114,26 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
                     {...props}
                     activeDomainId={activeDomainId}
                     radarData={radarData}
+                    radarColors={radarColors}
                   />
                 )}
               />
               <Radar
                 dataKey="coverage"
-                stroke="#4C6EF5"
-                fill="#4C6EF5"
-                fillOpacity={0.15}
+                stroke={radarColors.stroke}
+                fill={radarColors.fill}
+                fillOpacity={isDark ? 0.2 : 0.15}
                 strokeWidth={2}
-                dot={{ r: 4, fill: '#4C6EF5' }}
+                dot={{ r: 4, fill: radarColors.fill }}
               />
               <RechartsTooltip
                 formatter={(value: number) => [`${value}%`, 'Cobertura']}
+                contentStyle={{
+                  background: isDark ? '#1e1e2e' : '#fff',
+                  border: `1px solid ${isDark ? 'rgba(148, 163, 228, 0.2)' : '#DEE2E6'}`,
+                  borderRadius: 8,
+                  color: isDark ? '#e0e0e0' : '#333',
+                }}
               />
             </RadarChart>
           </ResponsiveContainer>

@@ -13,12 +13,12 @@ export function GapInsight({ gap, onInsertQuestion }: Props) {
 
   return (
     <Stack gap="xs" py="sm" px="md" style={{
-      background: 'rgba(230, 119, 0, 0.06)',
+      background: 'var(--pn-gap-bg)',
       borderRadius: 'var(--mantine-radius-sm)',
-      border: '1px dashed rgba(230, 119, 0, 0.3)',
+      border: '1px dashed var(--pn-gap-border)',
     }}>
       <Group gap="xs">
-        <IconSearch size={14} style={{ color: '#E67700' }} />
+        <IconSearch size={14} style={{ color: 'var(--pn-gap-icon)' }} />
         <Text size="sm" fw={600} c="orange.8">
           Investigar
         </Text>

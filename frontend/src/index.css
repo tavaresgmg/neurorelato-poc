@@ -4,20 +4,33 @@
     linear-gradient(180deg, #f8f9fc 0%, #f1f3f9 100%);
   --pn-card: rgba(255, 255, 255, 0.85);
   --pn-border: rgba(30, 37, 68, 0.10);
-  /* Improve contrast for "dimmed" text in light mode. */
-  --mantine-color-dimmed: #4c5678;
-  --mantine-color-placeholder: #687393;
 
-  /* Clinical dashboard */
+  /* Clinical status colors — light mode */
   --pn-clinical-covered: #2B8A3E;
   --pn-clinical-attention: #E67700;
   --pn-clinical-gap: #868E96;
   --pn-clinical-negated: #C92A2A;
   --pn-clinical-evidence-bg: #FFF9DB;
 
+  /* Component-level colors */
+  --pn-confidence-bar-bg: #E9ECEF;
+  --pn-gap-bg: rgba(230, 119, 0, 0.07);
+  --pn-gap-border: rgba(230, 119, 0, 0.3);
+  --pn-gap-icon: #E67700;
+  --pn-radar-grid: #DEE2E6;
+  --pn-radar-stroke: #4C6EF5;
+  --pn-radar-tick: #868E96;
+  --pn-radar-tick-active: #4C6EF5;
+
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light-mode only overrides (scoped so they don't leak into dark) */
+[data-mantine-color-scheme="light"] {
+  --mantine-color-dimmed: #4c5678;
+  --mantine-color-placeholder: #687393;
 }
 
 body {
@@ -83,7 +96,7 @@ body {
 .pn-confidence-bar {
   height: 6px;
   border-radius: 3px;
-  background: #E9ECEF;
+  background: var(--pn-confidence-bar-bg);
   overflow: hidden;
 }
 
@@ -169,6 +182,27 @@ body {
     linear-gradient(180deg, #1a1b2e 0%, #16172a 100%);
   --pn-card: rgba(30, 30, 46, 0.85);
   --pn-border: rgba(148, 163, 228, 0.12);
+
+  /* Clinical status colors — brighter for dark backgrounds */
+  --pn-clinical-covered: #51CF66;
+  --pn-clinical-attention: #FF922B;
+  --pn-clinical-gap: #ADB5BD;
+  --pn-clinical-negated: #FF6B6B;
+  --pn-clinical-evidence-bg: rgba(255, 249, 219, 0.08);
+
+  /* Component-level dark colors */
+  --pn-confidence-bar-bg: rgba(255, 255, 255, 0.1);
+  --pn-gap-bg: rgba(255, 146, 43, 0.1);
+  --pn-gap-border: rgba(255, 146, 43, 0.25);
+  --pn-gap-icon: #FF922B;
+  --pn-radar-grid: rgba(255, 255, 255, 0.12);
+  --pn-radar-stroke: #748FFC;
+  --pn-radar-tick: #ADB5BD;
+  --pn-radar-tick-active: #748FFC;
+
+  /* Dimmed text for dark mode — ensure readability */
+  --mantine-color-dimmed: #9CA3AF;
+  --mantine-color-placeholder: #6B7280;
 }
 
 [data-mantine-color-scheme="dark"] .pn-nav-item:hover {
@@ -190,8 +224,13 @@ body {
   background: rgba(99, 102, 241, 0.1);
 }
 
+[data-mantine-color-scheme="dark"] .pn-domain-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
 [data-mantine-color-scheme="dark"] .pn-evidence-inline {
-  background: rgba(255, 249, 219, 0.06);
+  background: var(--pn-clinical-evidence-bg);
+  border-left-color: var(--mantine-color-indigo-7);
 }
 
 [data-mantine-color-scheme="dark"] .pn-summary-banner {

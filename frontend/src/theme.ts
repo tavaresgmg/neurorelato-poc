@@ -38,11 +38,11 @@ export const theme = createTheme({
   },
 });
 
-/** Clinical status colors for use in components */
+/** Clinical status colors — resolved via CSS custom properties for light/dark adaptation */
 export const CLINICAL_COLORS = {
-  covered: '#2B8A3E',
-  attention: '#E67700',
-  gap: '#868E96',
-  negated: '#C92A2A',
-  evidenceBg: '#FFF9DB',
+  covered: 'var(--pn-clinical-covered)',
+  attention: 'var(--pn-clinical-attention)',
+  gap: 'var(--pn-clinical-gap)',
+  negated: 'var(--pn-clinical-negated)',
+  evidenceBg: 'var(--pn-clinical-evidence-bg)',
 } as const;
