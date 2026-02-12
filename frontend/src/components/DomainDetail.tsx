@@ -40,7 +40,7 @@ function FindingRow({ finding, sourceText }: { finding: Finding; sourceText?: st
             )}
           </Group>
           <Group gap="xs" wrap="nowrap">
-            <div className="pn-confidence-bar" style={{ width: 60 }}>
+            <div className="pn-confidence-bar" style={{ width: 100 }}>
               <div
                 className="pn-confidence-bar-fill"
                 style={{
@@ -49,6 +49,9 @@ function FindingRow({ finding, sourceText }: { finding: Finding; sourceText?: st
                 }}
               />
             </div>
+            <Text size="xs" fw={600} style={{ minWidth: 32 }}>
+              {pct}%
+            </Text>
           </Group>
         </Group>
       </UnstyledButton>

@@ -44,22 +44,21 @@ body {
 }
 
 /* --- Clinical Dashboard --- */
-.pn-domain-pill {
+/* Domain cards */
+.pn-domain-card {
   cursor: pointer;
   transition: all 150ms ease;
-  border: 1.5px solid transparent;
+  border: 1.5px solid var(--pn-border);
 }
-
-.pn-domain-pill:hover {
+.pn-domain-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
-
-.pn-domain-pill--active {
+.pn-domain-card--active {
   border-color: var(--mantine-color-indigo-4);
   background: var(--mantine-color-indigo-0);
 }
-
-.pn-domain-pill--gap {
+.pn-domain-card--gap {
   border-style: dashed;
   border-color: var(--pn-clinical-gap);
 }
@@ -82,8 +81,8 @@ body {
 
 /* Confidence bar (simplified) */
 .pn-confidence-bar {
-  height: 4px;
-  border-radius: 2px;
+  height: 6px;
+  border-radius: 3px;
   background: #E9ECEF;
   overflow: hidden;
 }
@@ -186,7 +185,7 @@ body {
   border-color: var(--mantine-color-indigo-8);
 }
 
-[data-mantine-color-scheme="dark"] .pn-domain-pill--active {
+[data-mantine-color-scheme="dark"] .pn-domain-card--active {
   border-color: var(--mantine-color-indigo-7);
   background: rgba(99, 102, 241, 0.1);
 }
