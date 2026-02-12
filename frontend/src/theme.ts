@@ -3,23 +3,23 @@ import { createTheme } from '@mantine/core';
 export const theme = createTheme({
   fontFamily: '"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif',
   headings: {
-    fontFamily: '"Fraunces", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif',
-    fontWeight: '650',
+    fontFamily: '"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif',
+    fontWeight: '600',
   },
   primaryColor: 'indigo',
   defaultRadius: 'md',
   colors: {
     gray: [
-      '#f8f9fc',
-      '#f1f3f9',
-      '#e4e7f0',
-      '#d4d8e5',
-      '#bec4d6',
-      '#a3abc2',
-      '#8590ab',
-      '#687393',
-      '#4c5678',
-      '#2e3654',
+      '#F8F9FA',
+      '#F1F3F5',
+      '#E9ECEF',
+      '#DEE2E6',
+      '#CED4DA',
+      '#ADB5BD',
+      '#868E96',
+      '#495057',
+      '#343A40',
+      '#212529',
     ],
   },
   components: {
@@ -37,3 +37,12 @@ export const theme = createTheme({
     },
   },
 });
+
+/** Clinical status colors for use in components */
+export const CLINICAL_COLORS = {
+  covered: '#2B8A3E',
+  attention: '#E67700',
+  gap: '#868E96',
+  negated: '#C92A2A',
+  evidenceBg: '#FFF9DB',
+} as const;

@@ -8,6 +8,13 @@
   --mantine-color-dimmed: #4c5678;
   --mantine-color-placeholder: #687393;
 
+  /* Clinical dashboard */
+  --pn-clinical-covered: #2B8A3E;
+  --pn-clinical-attention: #E67700;
+  --pn-clinical-gap: #868E96;
+  --pn-clinical-negated: #C92A2A;
+  --pn-clinical-evidence-bg: #FFF9DB;
+
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -34,6 +41,57 @@ body {
 
 .pn-finding-card:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Clinical Dashboard --- */
+.pn-domain-pill {
+  cursor: pointer;
+  transition: all 150ms ease;
+  border: 1.5px solid transparent;
+}
+
+.pn-domain-pill:hover {
+  transform: translateY(-1px);
+}
+
+.pn-domain-pill--active {
+  border-color: var(--mantine-color-indigo-4);
+  background: var(--mantine-color-indigo-0);
+}
+
+.pn-domain-pill--gap {
+  border-style: dashed;
+  border-color: var(--pn-clinical-gap);
+}
+
+/* Evidence inline */
+.pn-evidence-inline {
+  border-left: 3px solid var(--mantine-color-indigo-4);
+  background: var(--pn-clinical-evidence-bg);
+  border-radius: 0 var(--mantine-radius-sm) var(--mantine-radius-sm) 0;
+  padding: 12px 16px;
+}
+
+/* Summary banner */
+.pn-summary-banner {
+  background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+  border: 1px solid #DEE2E6;
+  border-radius: var(--mantine-radius-md);
+  padding: 16px 20px;
+}
+
+/* Confidence bar (simplified) */
+.pn-confidence-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: #E9ECEF;
+  overflow: hidden;
+}
+
+.pn-confidence-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 300ms ease;
 }
 
 .pn-nav-item {
@@ -126,6 +184,20 @@ body {
 [data-mantine-color-scheme="dark"] .pn-transcript-card {
   background: rgba(165, 180, 252, 0.08);
   border-color: var(--mantine-color-indigo-8);
+}
+
+[data-mantine-color-scheme="dark"] .pn-domain-pill--active {
+  border-color: var(--mantine-color-indigo-7);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+[data-mantine-color-scheme="dark"] .pn-evidence-inline {
+  background: rgba(255, 249, 219, 0.06);
+}
+
+[data-mantine-color-scheme="dark"] .pn-summary-banner {
+  background: linear-gradient(135deg, rgba(30, 30, 46, 0.9) 0%, rgba(40, 40, 56, 0.9) 100%);
+  border-color: var(--pn-border);
 }
 
 /* Evidence context box */
