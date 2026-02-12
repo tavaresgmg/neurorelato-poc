@@ -162,8 +162,6 @@ export default function App() {
             <InputPanel
               text={controller.text}
               onChangeText={controller.setText}
-              enableEmbeddings={controller.enableEmbeddings}
-              onChangeEnableEmbeddings={controller.setEnableEmbeddings}
               canProcess={controller.canProcess}
               loading={controller.loading}
               onProcess={controller.onProcess}
@@ -176,7 +174,6 @@ export default function App() {
               ref={outputRef}
               result={controller.result}
               loading={controller.loading}
-              onOpenEvidence={openEvidence}
               onInsertQuestion={controller.onInsertQuestion}
             />
           </Stack>

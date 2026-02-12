@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Checkbox,
   Group,
   Menu,
   Paper,
@@ -20,8 +19,6 @@ import { VoiceInput } from './VoiceInput';
 type Props = {
   text: string;
   onChangeText: (v: string) => void;
-  enableEmbeddings: boolean;
-  onChangeEnableEmbeddings: (v: boolean) => void;
   canProcess: boolean;
   loading: boolean;
   onProcess: () => void;
@@ -35,8 +32,6 @@ const MAX_CHARS = 15_000;
 export function InputPanel({
   text,
   onChangeText,
-  enableEmbeddings,
-  onChangeEnableEmbeddings,
   canProcess,
   loading,
   onProcess,
@@ -106,26 +101,15 @@ export function InputPanel({
 
         <VoiceInput speech={speech} onUseTranscript={onUseTranscript} />
 
-        <Group justify="space-between" align="center">
-          <Group gap="sm">
-            <Tooltip label="Método IA: mais lento, mas detecta achados sutis" position="bottom">
-              <Checkbox
-                label="Embeddings"
-                checked={enableEmbeddings}
-                onChange={(e) => onChangeEnableEmbeddings(e.currentTarget.checked)}
-              />
-            </Tooltip>
-          </Group>
-          <Group>
-            <Tooltip label="⌘ Enter" position="bottom" openDelay={500}>
-              <Button onClick={onProcess} loading={loading} disabled={!canProcess || charOver}>
-                Processar
-              </Button>
-            </Tooltip>
-            <Button variant="default" onClick={handleClear} disabled={loading || !text.trim()}>
-              Limpar
+        <Group justify="flex-end">
+          <Tooltip label="⌘ Enter" position="bottom" openDelay={500}>
+            <Button onClick={onProcess} loading={loading} disabled={!canProcess || charOver}>
+              Processar
             </Button>
-          </Group>
+          </Tooltip>
+          <Button variant="default" onClick={handleClear} disabled={loading || !text.trim()}>
+            Limpar
+          </Button>
         </Group>
       </Stack>
     </Paper>

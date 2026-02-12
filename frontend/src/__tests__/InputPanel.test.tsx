@@ -8,8 +8,6 @@ function baseProps() {
   return {
     text: 'texto',
     onChangeText: () => undefined,
-    enableEmbeddings: false,
-    onChangeEnableEmbeddings: () => undefined,
     canProcess: true,
     loading: false,
     onProcess: () => undefined,
@@ -32,8 +30,6 @@ test('InputPanel: audio desabilita quando nao suportado e transcript permite ins
     <InputPanel
       text=""
       onChangeText={() => undefined}
-      enableEmbeddings={false}
-      onChangeEnableEmbeddings={() => undefined}
       canProcess={false}
       loading={false}
       onProcess={() => undefined}
@@ -80,22 +76,6 @@ test('InputPanel: Limpar chama onClear apenas quando ha texto', () => {
 
   fireEvent.click(screen.getByRole('button', { name: /Limpar/i }));
   expect(onClear).toHaveBeenCalledTimes(1);
-});
-
-test('InputPanel: toggle de checkboxes chama callbacks', () => {
-  const onChangeEnableEmbeddings = vi.fn();
-  const props = baseProps();
-  renderWithProviders(
-    <InputPanel
-      {...props}
-      enableEmbeddings={false}
-      onChangeEnableEmbeddings={onChangeEnableEmbeddings}
-    />,
-  );
-
-  fireEvent.click(screen.getByLabelText(/Embeddings/i));
-
-  expect(onChangeEnableEmbeddings).toHaveBeenCalledWith(true);
 });
 
 test('InputPanel: texto muito longo mostra erro e desabilita Processar', () => {
