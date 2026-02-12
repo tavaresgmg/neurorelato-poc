@@ -70,7 +70,17 @@ function wrapLabel(text: string, maxChars: number): string[] {
   return lines;
 }
 
-function CustomRadarTick({ x, y, payload, activeDomainId, radarData, radarColors, cy }: any) {
+type RadarTickProps = {
+  x: number;
+  y: number;
+  payload: { index: number; value: string };
+  activeDomainId: string | null;
+  radarData: ReturnType<typeof buildRadarData>;
+  radarColors: { tick: string; tickActive: string };
+  cy: number;
+};
+
+function CustomRadarTick({ x, y, payload, activeDomainId, radarData, radarColors, cy }: RadarTickProps) {
   const point = radarData[payload.index];
   const isActive = activeDomainId === point?.domainId;
   const lines = wrapLabel(payload.value, 20);
@@ -178,7 +188,7 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
               <PolarGrid stroke={radarColors.grid} />
               <PolarAngleAxis
                 dataKey="domain"
-                tick={(props: any) => (
+                tick={(props: Record<string, unknown>) => (
                   <CustomRadarTick
                     {...props}
                     activeDomainId={activeDomainId}
