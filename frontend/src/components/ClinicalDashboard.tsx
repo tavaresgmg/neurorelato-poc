@@ -109,11 +109,7 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
 
   return (
     <Stack gap="md">
-      <SummaryBanner
-        text={result.summary?.text ?? null}
-        totalFindings={totalFindings}
-        totalGaps={result.gaps.filter((g) => g.gap_level !== 'none').length}
-      />
+      <SummaryBanner text={result.summary?.text ?? null} />
 
       <Group align="flex-start" gap="lg" wrap="nowrap">
         {radarData.length > 2 && (

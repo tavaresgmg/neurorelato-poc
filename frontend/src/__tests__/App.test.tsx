@@ -147,7 +147,6 @@ test('processa texto e renderiza achados e lacunas', async () => {
   });
 
   expect(screen.getByText(/Resumo técnico/i)).toBeInTheDocument();
-  expect(screen.getAllByText(/1 achados/i).length).toBeGreaterThan(0);
 
   // Findings are inside collapsed DomainDetail -- click the domain pill to expand
   fireEvent.click(screen.getByText(/Comunicação e Interação Social/i));
