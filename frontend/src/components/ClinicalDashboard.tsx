@@ -1,4 +1,18 @@
-import { Box, Collapse, SimpleGrid, Stack, Text, useMantineColorScheme } from '@mantine/core';
+import {
+  ActionIcon,
+  Box,
+  Collapse,
+  CopyButton,
+  Group,
+  Paper,
+  SimpleGrid,
+  Spoiler,
+  Stack,
+  Text,
+  Tooltip,
+  useMantineColorScheme,
+} from '@mantine/core';
+import { IconCheck, IconCopy, IconFileText } from '@tabler/icons-react';
 import { useState } from 'react';
 import {
   PolarAngleAxis,
@@ -121,6 +135,40 @@ export function ClinicalDashboard({ result, onInsertQuestion }: Props) {
 
       {/* 2. Summary — truncated */}
       <SummaryBanner text={result.summary?.text ?? null} />
+
+      {/* 2b. Redacted text — collapsible, only when anonymized */}
+      {result.input?.redacted_text && (
+        <Paper p="md" radius="md" withBorder>
+          <Group justify="space-between" align="center" mb="xs">
+            <Group gap="xs">
+              <IconFileText size={16} style={{ opacity: 0.6 }} />
+              <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+                Relato anonimizado
+              </Text>
+            </Group>
+            <CopyButton value={result.input.redacted_text} timeout={2000}>
+              {({ copied, copy }) => (
+                <Tooltip label={copied ? 'Copiado!' : 'Copiar relato'}>
+                  <ActionIcon
+                    variant="subtle"
+                    color={copied ? 'indigo' : 'gray'}
+                    size="sm"
+                    onClick={copy}
+                    aria-label="Copiar relato anonimizado"
+                  >
+                    {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+                  </ActionIcon>
+                </Tooltip>
+              )}
+            </CopyButton>
+          </Group>
+          <Spoiler maxHeight={100} showLabel="Ver relato completo" hideLabel="Recolher">
+            <Text size="sm" c="dimmed" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+              {result.input.redacted_text}
+            </Text>
+          </Spoiler>
+        </Paper>
+      )}
 
       {/* 3. Radar hero — centered, larger */}
       {radarData.length > 2 && (
