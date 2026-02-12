@@ -40,18 +40,10 @@ export function HistoryPanel({
   const filtered = useMemo(() => {
     if (!search.trim()) return history;
     const q = search.toLowerCase();
-    const qId = q.replaceAll('-', '');
     return history.filter((h) => {
       const date = formatDate(h.created_at).toLowerCase();
       const counts = `${h.findings_count} achados ${h.gaps_count} lacunas`;
-      const id = h.request_id.toLowerCase();
-      const idNoDash = id.replaceAll('-', '');
-      return (
-        date.includes(q) ||
-        counts.includes(q) ||
-        id.includes(q) ||
-        (qId.length >= 6 && idNoDash.includes(qId))
-      );
+      return date.includes(q) || counts.includes(q);
     });
   }, [history, search]);
 
@@ -80,7 +72,7 @@ export function HistoryPanel({
 
       <TextInput
         size="xs"
-        placeholder="Buscar por data, contagens ou id…"
+        placeholder="Buscar por data ou contagens…"
         leftSection={<IconSearch size={13} />}
         value={search}
         onChange={(e) => setSearch(e.currentTarget.value)}
