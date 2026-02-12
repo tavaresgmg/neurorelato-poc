@@ -16,11 +16,9 @@ import {
 import { useMantineColorScheme } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconBrain, IconInfoCircle, IconMoon, IconSun } from '@tabler/icons-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 
-import type { Finding } from './api/types';
 import { AboutPanel } from './components/AboutPanel';
-import { EvidenceModal, type EvidenceModalState } from './components/EvidenceModal';
 import { HistoryPanel } from './components/HistoryPanel';
 import { InputPanel } from './components/InputPanel';
 import { OutputPanel } from './components/OutputPanel';
@@ -31,7 +29,6 @@ export default function App() {
   const [navOpened, { toggle: toggleNav }] = useDisclosure(false);
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 
-  const [evidenceModal, setEvidenceModal] = useState<EvidenceModalState | null>(null);
   const [easterOpened, { open: openEaster, close: closeEaster }] = useDisclosure(false);
   const [aboutOpened, { open: openAbout, close: closeAbout }] = useDisclosure(false);
 
@@ -48,15 +45,6 @@ export default function App() {
     speech,
     onResultReady: handleResultReady,
   });
-
-  function openEvidence(f: Finding) {
-    setEvidenceModal({
-      title: f.symptom,
-      evidence: f.evidence || [],
-      meta: { score: f.score, method: f.method, negated: f.negated },
-      sourceText: controller.result?.input?.redacted_text ?? null,
-    });
-  }
 
   const isDark = colorScheme === 'dark';
 
@@ -177,8 +165,6 @@ export default function App() {
               onInsertQuestion={controller.onInsertQuestion}
             />
           </Stack>
-
-          <EvidenceModal value={evidenceModal} onClose={() => setEvidenceModal(null)} />
 
           <Modal
             opened={easterOpened}

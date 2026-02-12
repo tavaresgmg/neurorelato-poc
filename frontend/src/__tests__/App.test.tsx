@@ -146,13 +146,20 @@ test('processa texto e renderiza achados e lacunas', async () => {
     expect(screen.getByText(/Comunicação e Interação Social/i)).toBeInTheDocument();
   });
 
-  expect(screen.getByText(/^Resumo técnico$/i)).toBeInTheDocument();
+  expect(screen.getByText(/Resumo técnico/i)).toBeInTheDocument();
   expect(screen.getAllByText(/1 achados/i).length).toBeGreaterThan(0);
-  expect(screen.getByText(/contato visual reduzido/i)).toBeInTheDocument();
-  expect(screen.getByText(/\u201cnão olha nos olhos\u201d/i)).toBeInTheDocument();
 
-  expect(screen.getByText(/^Lacunas$/i)).toBeInTheDocument();
-  expect(screen.getByText(/Há insistência em rotinas específicas\?/i)).toBeInTheDocument();
+  // Findings are inside collapsed DomainDetail -- click the domain pill to expand
+  fireEvent.click(screen.getByText(/Comunicação e Interação Social/i));
+  await waitFor(() => {
+    expect(screen.getByText(/contato visual reduzido/i)).toBeInTheDocument();
+  });
+
+  // Gaps are shown as GapInsight within the domain detail (DOM_02 pill)
+  fireEvent.click(screen.getByText(/Padrões Restritos/i));
+  await waitFor(() => {
+    expect(screen.getByText(/Há insistência em rotinas específicas\?/i)).toBeInTheDocument();
+  });
 });
 
 test('audio desabilitado quando navegador nao suporta SpeechRecognition', async () => {
@@ -240,7 +247,7 @@ test('audio suportado: inicia, transcreve, usa transcricao e para', async () => 
   }
 });
 
-test('renderiza badges Alto/Médio/Baixo conforme score', async () => {
+test('renderiza achados com barras de confianca ao expandir dominio', async () => {
   const payload = mockOkResponse();
   payload.domains[0].findings = [
     {
@@ -287,12 +294,21 @@ test('renderiza badges Alto/Médio/Baixo conforme score', async () => {
   fireEvent.click(screen.getByRole('button', { name: /Processar/i }));
 
   await waitFor(() => {
-    expect(screen.getByText(/s1/i)).toBeInTheDocument();
+    expect(screen.getByText(/Comunicação e Interação Social/i)).toBeInTheDocument();
   });
 
-  expect(screen.getByText(/^Alto$/i)).toBeInTheDocument();
-  expect(screen.getByText(/^Médio$/i)).toBeInTheDocument();
-  expect(screen.getByText(/^Baixo$/i)).toBeInTheDocument();
+  // Expand the domain to see findings
+  fireEvent.click(screen.getByText(/Comunicação e Interação Social/i));
+  await waitFor(() => {
+    expect(screen.getByText(/s1/)).toBeInTheDocument();
+  });
+
+  expect(screen.getByText(/s2/)).toBeInTheDocument();
+  expect(screen.getByText(/s3/)).toBeInTheDocument();
+
+  // Confidence bars are rendered (not Alto/Medio/Baixo badges)
+  const bars = document.querySelectorAll('.pn-confidence-bar-fill');
+  expect(bars.length).toBe(3);
 });
 
 test('mostra notificacao quando API falha', async () => {
