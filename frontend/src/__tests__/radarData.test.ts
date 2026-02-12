@@ -30,6 +30,7 @@ describe('buildRadarData', () => {
     expect(result[0].domain).toBe('Cognição');
     expect(result[0].coverage).toBe(85);
     expect(result[0].isGap).toBe(false);
+    expect(result[0].gapLevel).toBe('none');
   });
 
   it('returns 0 coverage for gap-only domains', () => {
@@ -38,6 +39,7 @@ describe('buildRadarData', () => {
     expect(result).toHaveLength(1);
     expect(result[0].coverage).toBe(0);
     expect(result[0].isGap).toBe(true);
+    expect(result[0].gapLevel).toBe('high');
   });
 
   it('merges domains and gaps correctly', () => {
@@ -48,9 +50,11 @@ describe('buildRadarData', () => {
     const cognition = result.find((r) => r.domainId === 'D1')!;
     expect(cognition.coverage).toBe(90);
     expect(cognition.isGap).toBe(true);
+    expect(cognition.gapLevel).toBe('low');
     const motor = result.find((r) => r.domainId === 'D2')!;
     expect(motor.coverage).toBe(0);
     expect(motor.isGap).toBe(true);
+    expect(motor.gapLevel).toBe('high');
   });
 
   it('returns empty array when no data', () => {
@@ -61,6 +65,7 @@ describe('buildRadarData', () => {
     const domains = [makeDomain('D1', 'Cognição', [])];
     const result = buildRadarData(domains, []);
     expect(result[0].isGap).toBe(true);
+    expect(result[0].gapLevel).toBe('none');
     expect(result[0].coverage).toBe(0);
   });
 });

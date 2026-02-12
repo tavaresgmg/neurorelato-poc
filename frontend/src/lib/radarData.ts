@@ -5,6 +5,7 @@ export type RadarDataPoint = {
   domainId: string;
   coverage: number;
   isGap: boolean;
+  gapLevel: 'none' | 'low' | 'medium' | 'high';
   findingsCount: number;
 };
 
@@ -30,6 +31,8 @@ export function buildRadarData(
 
     const isGap = gap ? gap.gap_level !== 'none' : findings.length === 0;
 
-    return { domain: name, domainId: id, coverage, isGap, findingsCount: findings.length };
+    const gapLevel = gap?.gap_level ?? 'none';
+
+    return { domain: name, domainId: id, coverage, isGap, gapLevel, findingsCount: findings.length };
   });
 }
